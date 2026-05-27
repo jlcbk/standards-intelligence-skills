@@ -75,6 +75,36 @@ class CliTests(unittest.TestCase):
         self.assertTrue(any("额外字段 extra" in error for error in errors))
         self.assertTrue(any("额外字段 unexpected" in error for error in errors))
 
+    def test_validate_root_checks_demo_coverage_counts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            shutil.copytree(ROOT, repo)
+            coverage_path = repo / "demos" / "gb-vehicle-safety" / "coverage-report.json"
+            coverage = json.loads(coverage_path.read_text(encoding="utf-8"))
+            coverage["answer_packet_count"] = 999
+            coverage_path.write_text(json.dumps(coverage, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+            errors = cli.validate_root(repo)
+
+        self.assertTrue(any("coverage-report.json" in error for error in errors))
+        self.assertTrue(any("answer_packet_count" in error and "应为 5" in error for error in errors))
+
+    def test_validate_root_checks_demo_citation_refs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            shutil.copytree(ROOT, repo)
+            answers_path = repo / "demos" / "gb-vehicle-safety" / "answer-packets.synthetic.jsonl"
+            lines = answers_path.read_text(encoding="utf-8").splitlines()
+            first_answer = json.loads(lines[0])
+            first_answer["citations"][0]["provision_id"] = "missing-provision"
+            lines[0] = json.dumps(first_answer, ensure_ascii=False)
+            answers_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+            errors = cli.validate_root(repo)
+
+        self.assertTrue(any("answer-packets.synthetic.jsonl:1" in error for error in errors))
+        self.assertTrue(any("missing-provision" in error for error in errors))
+
     def test_gb_vehicle_safety_demo_counts(self) -> None:
         demo_root = ROOT / "demos" / "gb-vehicle-safety"
         sources = demo_root.joinpath("source-manifest.jsonl").read_text(encoding="utf-8").splitlines()

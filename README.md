@@ -69,6 +69,9 @@ PYTHONPATH=src python -m standards_intelligence_skills.cli validate
 schema 文件基本形态，并把 `examples/` 与 `demos/` 中的 JSON/JSONL artifact 按
 `schemas/*.schema.json` 校验。当前实现覆盖本仓库使用的 JSON Schema 子集：
 `type`、`required`、`properties`、`items`、`enum` 和 `additionalProperties`。
+对 demo 还会做 artifact integrity checks：coverage count 必须匹配 JSONL 行数，
+answer/checklist citation 必须引用存在的 provision/source，provision 的 `source_id`
+也必须存在于 source manifest。
 
 ## PI Agent 使用方式
 
