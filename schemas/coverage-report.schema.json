@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/coverage-report.schema.json",
+  "title": "CoverageReport",
+  "type": "object",
+  "required": [
+    "demo_id",
+    "title",
+    "source_count",
+    "provision_count",
+    "answer_packet_count",
+    "content_boundary",
+    "validation"
+  ],
+  "properties": {
+    "demo_id": {"type": "string"},
+    "title": {"type": "string"},
+    "source_count": {"type": "integer"},
+    "provision_count": {"type": "integer"},
+    "answer_packet_count": {"type": "integer"},
+    "content_boundary": {"type": "object", "additionalProperties": true},
+    "validation": {"type": "object", "additionalProperties": true}
+  },
+  "additionalProperties": true
+}

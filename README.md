@@ -41,6 +41,7 @@ synthetic and small.
 skills/       Reusable PI-agent skills
 schemas/      JSON Schema contracts for durable artifacts
 examples/     Small synthetic examples for validation
+demos/        End-to-end demo packages with safe source boundaries
 docs/         Architecture, PI-agent contract, policies, roadmap
 src/          Small stdlib CLI
 tests/        Validation tests
@@ -74,6 +75,13 @@ PYTHONPATH=src python -m standards_intelligence_skills.cli validate
 6. If the task succeeded, consider whether the skill itself should be improved.
 
 See [docs/pi-agent-contract.md](docs/pi-agent-contract.md).
+
+## Demo Packages
+
+The first demo package is [demos/gb-vehicle-safety](demos/gb-vehicle-safety).
+It uses official metadata for GB 7258-2017 and GB 1589-2016, then adds
+synthetic/paraphrased provisions and answer packets to exercise the workflow
+without storing standards PDF text or large verbatim standard excerpts.
 
 ## Safety Boundary
 

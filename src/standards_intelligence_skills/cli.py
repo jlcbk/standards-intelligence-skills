@@ -59,6 +59,21 @@ REQUIRED_EXAMPLE_FIELDS = {
     },
 }
 
+REQUIRED_DEMO_FIELDS = {
+    "source-manifest.jsonl": REQUIRED_EXAMPLE_FIELDS["source-manifest.example.jsonl"],
+    "provisions.synthetic.jsonl": REQUIRED_EXAMPLE_FIELDS["provision.example.json"],
+    "answer-packets.synthetic.jsonl": REQUIRED_EXAMPLE_FIELDS["answer-packet.example.json"],
+    "coverage-report.json": {
+        "demo_id",
+        "title",
+        "source_count",
+        "provision_count",
+        "answer_packet_count",
+        "content_boundary",
+        "validation",
+    },
+}
+
 
 def repo_root_from(start: Path | None = None) -> Path:
     current = (start or Path.cwd()).resolve()
@@ -111,9 +126,9 @@ def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def validate_jsonl(path: Path) -> list[str]:
+def validate_jsonl(path: Path, required_fields: set[str] | None = None) -> list[str]:
     errors: list[str] = []
-    required = REQUIRED_EXAMPLE_FIELDS.get(path.name, set())
+    required = required_fields if required_fields is not None else REQUIRED_EXAMPLE_FIELDS.get(path.name, set())
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
             continue
@@ -125,6 +140,13 @@ def validate_jsonl(path: Path) -> list[str]:
         missing = sorted(required - set(record))
         if missing:
             errors.append(f"{path}:{line_number}: missing fields: {', '.join(missing)}")
+        if path.name == "source-manifest.jsonl":
+            forbidden = {"full_text", "content", "standard_text"} & set(record)
+            if forbidden:
+                errors.append(
+                    f"{path}:{line_number}: public demo source manifests must not contain: "
+                    + ", ".join(sorted(forbidden))
+                )
     return errors
 
 
@@ -186,6 +208,20 @@ def validate_root(root: Path) -> list[str]:
 
     for example_path in sorted((root / "examples").glob("*.jsonl")):
         errors.extend(validate_jsonl(example_path))
+
+    demos_dir = root / "demos"
+    if demos_dir.exists():
+        for demo_json in sorted(demos_dir.glob("*/*.json")):
+            try:
+                demo_record = load_json(demo_json)
+            except json.JSONDecodeError as exc:
+                errors.append(f"{demo_json}: invalid JSON: {exc}")
+                continue
+            missing = sorted(REQUIRED_DEMO_FIELDS.get(demo_json.name, set()) - set(demo_record))
+            if missing:
+                errors.append(f"{demo_json}: missing fields: {', '.join(missing)}")
+        for demo_jsonl in sorted(demos_dir.glob("*/*.jsonl")):
+            errors.extend(validate_jsonl(demo_jsonl, REQUIRED_DEMO_FIELDS.get(demo_jsonl.name, set())))
 
     return errors
 
