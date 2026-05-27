@@ -2,7 +2,7 @@
   "change_id": "chg-demo-gb7258-metadata-refresh-001",
   "change_type": "metadata_refresh",
   "detected_at": "2026-05-27T10:30:00Z",
-  "summary": "Synthetic demo packet showing how a PI agent records a metadata refresh for GB 7258-2017 without storing standard text.",
+  "summary": "Synthetic demo packet：展示 PI agent 如何记录 GB 7258-2017 metadata refresh，同时不保存标准正文。",
   "old_source_id": "src-gb-7258-2017",
   "new_source_id": "src-gb-7258-2017",
   "version_relation": {
@@ -19,7 +19,7 @@
       "change_kind": "metadata_reviewed",
       "new_provision_id": "syn-gb7258-meta-001",
       "locator": "metadata/status",
-      "summary": "Synthetic review item: confirm status and replacement metadata before answering.",
+      "summary": "Synthetic review item：回答前确认状态和替代关系 metadata。",
       "impact_level": "low"
     }
   ],
@@ -33,13 +33,13 @@
   "review_tasks": [
     {
       "task_id": "review-gb7258-current-status",
-      "title": "Confirm GB 7258 metadata before next demo release",
-      "reason": "Public metadata can change and should be checked before a new answer packet is generated.",
+      "title": "下次 demo 发布前确认 GB 7258 metadata",
+      "reason": "公开 metadata 可能变化，生成新的 answer packet 前应先检查。",
       "required_human_decision": false
     }
   ],
   "confidence": "medium",
   "unresolved_issues": [
-    "This is a synthetic metadata-refresh example, not a substantive GB 7258 revision analysis."
+    "这是 synthetic metadata-refresh 示例，不是 GB 7258 实质修订分析。"
   ]
 }

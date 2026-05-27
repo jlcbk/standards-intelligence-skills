@@ -1,26 +1,24 @@
-# Answer Contract
+# 答案契约
 
-A regulatory or standards answer must be useful, traceable, and honest about
-uncertainty.
+标准/法规答案必须可追溯、可复核，并且诚实说明不确定性。
 
-## Required Sections
+## 必须包含
 
-1. **Short answer**: direct conclusion.
-2. **Scope**: jurisdiction, document family, product/process, version, and date.
-3. **Citations**: provision IDs and source locators.
-4. **Conditions and exceptions**: explicit qualifiers.
-5. **Version safety**: current, draft, superseded, unknown, or mixed.
-6. **Unresolved issues**: missing source, low confidence, or review needed.
+1. **简短结论**：直接回答问题。
+2. **适用范围**：管辖地、文档族、产品/流程、版本和日期。
+3. **引用**：provision ID 和来源 locator。
+4. **条件与例外**：明确适用条件、限制和例外。
+5. **版本安全**：current、draft、superseded、unknown 或 mixed。
+6. **未解决问题**：缺来源、低置信度、需要 review 的事项。
 
-## Forbidden Patterns
+## 禁止模式
 
-- No uncited normative conclusion.
-- No citation to candidate-only content unless the answer is clearly marked as
-  provisional.
-- No mixing versions without marking the answer as mixed-version.
-- No legal or certification sign-off language.
+- 不给来源引用就输出规范性结论。
+- 默认引用 candidate 内容，除非答案明确标记为 provisional。
+- 混用版本却不说明。
+- 使用法律意见、认证签字、最终合规结论这类表述。
 
-## Recommended Output
+## 推荐输出
 
-Use `schemas/answer-packet.schema.json` for durable answers. A human-facing
-answer can be generated from the packet after validation.
+持久化答案使用 `schemas/answer-packet.schema.json`。通过验证后，再从 answer packet
+生成给人看的答案。

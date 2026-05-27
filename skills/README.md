@@ -1,11 +1,10 @@
 # Skills
 
-Each skill is a reusable workflow that a PI agent can load for a standards or
-regulatory intelligence task.
+每个 skill 都是一套可复用 workflow，供 PI agent 在标准/法规智能任务中加载。
 
-Use `standards-skills list` to inspect the available skills.
+使用 `standards-skills list` 查看当前可用 skills。
 
-Current skills:
+当前 skills：
 
 - `source-intake`
 - `provision-compiler`

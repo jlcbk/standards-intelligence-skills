@@ -1,6 +1,6 @@
 {
   "demo_id": "gb-vehicle-safety",
-  "title": "GB 7258 / GB 1589 vehicle safety workflow demo",
+  "title": "GB 7258 / GB 1589 车辆安全 workflow demo",
   "source_count": 2,
   "provision_count": 12,
   "answer_packet_count": 5,
@@ -14,7 +14,7 @@
     "synthetic_answer_packets": 5,
     "standard_pdf_text_stored": false,
     "long_verbatim_standard_text_stored": false,
-    "public_repository_policy": "metadata and synthetic demo artifacts only"
+    "public_repository_policy": "公开仓库只保存 metadata 和 synthetic demo artifacts"
   },
   "review_status_counts": {
     "reviewed": 12
@@ -40,8 +40,8 @@
     "expected_result": "pass"
   },
   "next_steps": [
-    "Add a real BYOD/private processing path before using actual standard PDFs.",
-    "Add change-packet schema for replacement and revision tracking.",
-    "Add compliance checklist schema before using this for evidence workflow."
+    "使用真实标准 PDF 前，先增加 BYOD/private processing path。",
+    "为替代关系和修订跟踪增加 change-packet schema。",
+    "将本 demo 扩展为 evidence workflow 前，先完善 compliance checklist schema。"
   ]
 }

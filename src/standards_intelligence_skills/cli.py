@@ -175,7 +175,7 @@ def build_run_log(
     status: str = "planned",
     artifacts: list[str] | None = None,
     validation_passed: bool = False,
-    validation_notes: str = "Fill after validation.",
+    validation_notes: str = "验证后填写。",
 ) -> dict[str, Any]:
     return {
         "run_id": run_id or f"run-{uuid.uuid4().hex[:12]}",
@@ -203,16 +203,16 @@ def validate_jsonl(path: Path, required_fields: set[str] | None = None) -> list[
         try:
             record = json.loads(line)
         except json.JSONDecodeError as exc:
-            errors.append(f"{path}:{line_number}: invalid JSONL: {exc}")
+            errors.append(f"{path}:{line_number}: JSONL 无效：{exc}")
             continue
         missing = sorted(required - set(record))
         if missing:
-            errors.append(f"{path}:{line_number}: missing fields: {', '.join(missing)}")
+            errors.append(f"{path}:{line_number}: 缺少字段：{', '.join(missing)}")
         if path.name == "source-manifest.jsonl":
             forbidden = {"full_text", "content", "standard_text"} & set(record)
             if forbidden:
                 errors.append(
-                    f"{path}:{line_number}: public demo source manifests must not contain: "
+                    f"{path}:{line_number}: 公开 demo source manifest 不得包含："
                     + ", ".join(sorted(forbidden))
                 )
     return errors
@@ -223,56 +223,56 @@ def validate_root(root: Path) -> list[str]:
 
     skills = discover_skills(root)
     if not skills:
-        errors.append("No skills found")
+        errors.append("未找到 skills")
 
     seen_names: set[str] = set()
     for skill in skills:
         if not skill.name:
-            errors.append(f"{skill.path}: missing name")
+            errors.append(f"{skill.path}: 缺少 name")
         if not skill.description:
-            errors.append(f"{skill.path}: missing description")
+            errors.append(f"{skill.path}: 缺少 description")
         if skill.name in seen_names:
-            errors.append(f"{skill.path}: duplicate skill name {skill.name}")
+            errors.append(f"{skill.path}: skill name 重复：{skill.name}")
         seen_names.add(skill.name)
         if skill.path.parent.name != skill.name:
-            errors.append(f"{skill.path}: folder name must match skill name {skill.name}")
+            errors.append(f"{skill.path}: 文件夹名必须匹配 skill name {skill.name}")
 
     index_path = root / "skills" / "index.json"
     if index_path.exists():
         try:
             index = load_json(index_path)
         except json.JSONDecodeError as exc:
-            errors.append(f"{index_path}: invalid JSON: {exc}")
+            errors.append(f"{index_path}: JSON 无效：{exc}")
         else:
             indexed_names = {item.get("name") for item in index if isinstance(item, dict)}
             missing = sorted(seen_names - indexed_names)
             extra = sorted(indexed_names - seen_names)
             if missing:
-                errors.append(f"{index_path}: missing skills: {', '.join(missing)}")
+                errors.append(f"{index_path}: 缺少 skills：{', '.join(missing)}")
             if extra:
-                errors.append(f"{index_path}: unknown skills: {', '.join(extra)}")
+                errors.append(f"{index_path}: 未知 skills：{', '.join(extra)}")
     else:
-        errors.append(f"{index_path}: missing skill index")
+        errors.append(f"{index_path}: 缺少 skill index")
 
     for schema_path in sorted((root / "schemas").glob("*.schema.json")):
         try:
             schema = load_json(schema_path)
         except json.JSONDecodeError as exc:
-            errors.append(f"{schema_path}: invalid JSON: {exc}")
+            errors.append(f"{schema_path}: JSON 无效：{exc}")
             continue
         for field in ("$schema", "title", "type"):
             if field not in schema:
-                errors.append(f"{schema_path}: missing schema field {field}")
+                errors.append(f"{schema_path}: 缺少 schema 字段 {field}")
 
     for example_path in sorted((root / "examples").glob("*.json")):
         try:
             example = load_json(example_path)
         except json.JSONDecodeError as exc:
-            errors.append(f"{example_path}: invalid JSON: {exc}")
+            errors.append(f"{example_path}: JSON 无效：{exc}")
             continue
         missing = sorted(REQUIRED_EXAMPLE_FIELDS.get(example_path.name, set()) - set(example))
         if missing:
-            errors.append(f"{example_path}: missing fields: {', '.join(missing)}")
+            errors.append(f"{example_path}: 缺少字段：{', '.join(missing)}")
 
     for example_path in sorted((root / "examples").glob("*.jsonl")):
         errors.extend(validate_jsonl(example_path))
@@ -283,11 +283,11 @@ def validate_root(root: Path) -> list[str]:
             try:
                 demo_record = load_json(demo_json)
             except json.JSONDecodeError as exc:
-                errors.append(f"{demo_json}: invalid JSON: {exc}")
+                errors.append(f"{demo_json}: JSON 无效：{exc}")
                 continue
             missing = sorted(REQUIRED_DEMO_FIELDS.get(demo_json.name, set()) - set(demo_record))
             if missing:
-                errors.append(f"{demo_json}: missing fields: {', '.join(missing)}")
+                errors.append(f"{demo_json}: 缺少字段：{', '.join(missing)}")
         for demo_jsonl in sorted(demos_dir.glob("*/*.jsonl")):
             errors.extend(validate_jsonl(demo_jsonl, REQUIRED_DEMO_FIELDS.get(demo_jsonl.name, set())))
 
@@ -321,7 +321,7 @@ def cmd_show(args: argparse.Namespace) -> int:
     if skill:
         print(skill.path.read_text(encoding="utf-8"))
         return 0
-    print(f"unknown skill: {args.skill}", file=sys.stderr)
+    print(f"未知 skill：{args.skill}", file=sys.stderr)
     return 2
 
 
@@ -331,11 +331,11 @@ def cmd_validate(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps({"ok": not errors, "errors": errors}, indent=2, ensure_ascii=False))
     elif errors:
-        print("Validation failed:", file=sys.stderr)
+        print("验证失败：", file=sys.stderr)
         for error in errors:
             print(f"- {error}", file=sys.stderr)
     else:
-        print("Validation passed.")
+        print("验证通过。")
     return 1 if errors else 0
 
 
@@ -359,29 +359,29 @@ def cmd_run_task(args: argparse.Namespace) -> int:
     try:
         packet = load_json(packet_path)
     except json.JSONDecodeError as exc:
-        print(f"{packet_path}: invalid JSON: {exc}", file=sys.stderr)
+        print(f"{packet_path}: JSON 无效：{exc}", file=sys.stderr)
         return 2
 
     skill_name = args.skill or packet.get("skill_name")
     if not skill_name:
-        print("task packet must include skill_name or --skill must be provided", file=sys.stderr)
+        print("task packet 必须包含 skill_name，或通过 --skill 指定", file=sys.stderr)
         return 2
 
     skill = find_skill(root, skill_name)
     if not skill:
-        print(f"unknown skill: {skill_name}", file=sys.stderr)
+        print(f"未知 skill：{skill_name}", file=sys.stderr)
         return 2
 
     task = packet.get("requested_outcome") or packet.get("task") or f"Run {skill_name}"
     artifacts = packet.get("allowed_outputs", [])
     if not isinstance(artifacts, list):
-        print("task packet allowed_outputs must be a list", file=sys.stderr)
+        print("task packet 的 allowed_outputs 必须是 list", file=sys.stderr)
         return 2
 
     validation_errors = validate_root(root) if args.validate else []
     validation_passed = args.validate and not validation_errors
     status = "passed" if validation_passed else "failed" if validation_errors else "planned"
-    notes = "Validation passed." if validation_passed else "Validation not requested."
+    notes = "验证通过。" if validation_passed else "未请求验证。"
     if validation_errors:
         notes = "; ".join(validation_errors)
 
@@ -416,36 +416,36 @@ def cmd_run_task(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="standards-skills")
-    parser.add_argument("--root", help="Repository root. Defaults to auto-detection.")
+    parser.add_argument("--root", help="仓库根目录。默认自动识别。")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    list_parser = subparsers.add_parser("list", help="List available skills.")
-    list_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    list_parser = subparsers.add_parser("list", help="列出可用 skills。")
+    list_parser.add_argument("--json", action="store_true", help="输出 JSON。")
     list_parser.set_defaults(func=cmd_list)
 
-    show_parser = subparsers.add_parser("show", help="Print a skill file.")
-    show_parser.add_argument("skill", help="Skill name.")
+    show_parser = subparsers.add_parser("show", help="打印 skill 文件。")
+    show_parser.add_argument("skill", help="Skill 名称。")
     show_parser.set_defaults(func=cmd_show)
 
-    validate_parser = subparsers.add_parser("validate", help="Validate skills and examples.")
-    validate_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    validate_parser = subparsers.add_parser("validate", help="验证 skills 和 examples。")
+    validate_parser.add_argument("--json", action="store_true", help="输出 JSON。")
     validate_parser.set_defaults(func=cmd_validate)
 
-    run_log_parser = subparsers.add_parser("new-run-log", help="Create a run log template.")
-    run_log_parser.add_argument("--skill", required=True, help="Skill name.")
-    run_log_parser.add_argument("--task", required=True, help="Task description.")
-    run_log_parser.add_argument("--actor", default="pi-agent", help="Actor name.")
-    run_log_parser.add_argument("--run-id", help="Optional stable run ID.")
-    run_log_parser.add_argument("--output", help="Optional output path.")
+    run_log_parser = subparsers.add_parser("new-run-log", help="创建 run log 模板。")
+    run_log_parser.add_argument("--skill", required=True, help="Skill 名称。")
+    run_log_parser.add_argument("--task", required=True, help="任务描述。")
+    run_log_parser.add_argument("--actor", default="pi-agent", help="Actor 名称。")
+    run_log_parser.add_argument("--run-id", help="可选稳定 run ID。")
+    run_log_parser.add_argument("--output", help="可选输出路径。")
     run_log_parser.set_defaults(func=cmd_new_run_log)
 
-    run_task_parser = subparsers.add_parser("run-task", help="Select a skill from a task packet.")
-    run_task_parser.add_argument("--packet", required=True, help="Task packet JSON path.")
-    run_task_parser.add_argument("--skill", help="Override skill_name from the packet.")
-    run_task_parser.add_argument("--actor", default="pi-agent", help="Actor name.")
-    run_task_parser.add_argument("--run-id", help="Optional stable run ID.")
-    run_task_parser.add_argument("--output", help="Run log output path. Defaults to runs/<run_id>.json.")
-    run_task_parser.add_argument("--validate", action="store_true", help="Run repository validation first.")
+    run_task_parser = subparsers.add_parser("run-task", help="从 task packet 选择 skill 并生成 run log。")
+    run_task_parser.add_argument("--packet", required=True, help="Task packet JSON 路径。")
+    run_task_parser.add_argument("--skill", help="覆盖 packet 中的 skill_name。")
+    run_task_parser.add_argument("--actor", default="pi-agent", help="Actor 名称。")
+    run_task_parser.add_argument("--run-id", help="可选稳定 run ID。")
+    run_task_parser.add_argument("--output", help="Run log 输出路径。默认 runs/<run_id>.json。")
+    run_task_parser.add_argument("--validate", action="store_true", help="先运行仓库 validation。")
     run_task_parser.set_defaults(func=cmd_run_task)
 
     return parser

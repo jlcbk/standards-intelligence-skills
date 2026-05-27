@@ -1,41 +1,40 @@
-# Compliance Workflow
+# 合规工作流
 
-Compliance workflow turns reviewed provisions into work that can be assigned,
-evidenced, checked, and audited.
+Compliance workflow 把 reviewed provisions 转成可以分配、举证、检查和审计的工作项。
 
-## Checklist Item Shape
+## Checklist Item 结构
 
-Each checklist item should preserve:
+每个 checklist item 应保留：
 
-- the requirement summary;
-- cited provision IDs;
-- the control or check to perform;
-- concrete evidence required;
-- owner role;
-- status;
-- unresolved applicability questions;
-- acceptance criteria.
+- requirement summary；
+- cited provision IDs；
+- 要执行的 control/check；
+- 需要收集的具体 evidence；
+- owner role；
+- status；
+- 未解决的适用性问题；
+- acceptance criteria。
 
-## Status Model
+## 状态模型
 
-Recommended item statuses:
+建议 item status：
 
-- `todo`: item has not started.
-- `in_progress`: evidence is being collected.
-- `reviewed`: evidence has been checked by the workflow.
-- `blocked`: missing source text, missing evidence, or missing decision.
-- `not_applicable`: scoped out with a reason.
+- `todo`：尚未开始。
+- `in_progress`：正在收集证据。
+- `reviewed`：证据已被流程检查。
+- `blocked`：缺来源文本、缺证据或缺决定。
+- `not_applicable`：已说明理由并排除适用。
 
-## Public Demo Boundary
+## 公开 Demo 边界
 
-Public demo checklists can show workflow shape with synthetic provisions. They
-must not claim that a vehicle, product, or process complies with a real
-standard. Real compliance use requires authorized source text and human review.
+公开 demo checklist 只能用 synthetic provisions 展示 workflow 形态。
+它不能声称某个车辆、产品或流程符合真实标准。
+真实合规使用必须有授权 source text 和人类 review。
 
 ## Promotion Rule
 
-Only promote a checklist from draft to approved when:
+只有满足以下条件，才能把 checklist 从 draft 提升为 approved：
 
-1. every item cites reviewed or verified provisions;
-2. every item has concrete evidence or a documented reason it is not applicable;
-3. unresolved issues are closed or explicitly accepted by a responsible human.
+1. 每个 item 都引用 reviewed 或 verified provisions；
+2. 每个 item 都有具体证据，或有明确的不适用理由；
+3. unresolved issues 已关闭，或由负责人明确接受。

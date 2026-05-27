@@ -1,48 +1,44 @@
-# Change Intelligence
+# 变更情报
 
-Change intelligence turns source updates into reviewable packets. It is not a
-claim that a legal or technical requirement changed unless the packet contains
-reviewed evidence.
+Change intelligence 的目标是把来源更新整理成可 review 的 change packet。
+除非 packet 里有已 review 的证据，否则它不能声称法律或技术要求已经发生实质变化。
 
-## Assumptions
+## 基本假设
 
-- The source manifest is the first layer of truth for status, dates, official
-  locators, and replacement relationships.
-- A document family may have multiple versions, drafts, replacements, or planned
-  revisions.
-- Public repositories should store metadata-level change packets by default.
-- Provision-level diffs belong in private/BYOD processing unless the source text
-  is safe to redistribute.
+- Source manifest 是状态、日期、官方 locator 和替代关系的第一层事实来源。
+- 一个 document family 可能有多个版本、草案、替代版本或计划修订。
+- 公开仓库默认只保存 metadata-level change packet。
+- Provision-level diff 应放在私有 BYOD 处理流程中，除非源文本明确可公开再分发。
 
-## Recommended Flow
+## 推荐流程
 
-1. Refresh source manifest metadata.
-2. Compare status, dates, replacement relation, and official locator.
-3. If authorized text is available, compare provisions by stable locator.
-4. Classify changes as metadata refresh, new version, replacement, provision
-   change, withdrawal, or unknown.
-5. Generate review tasks for low-confidence or high-impact changes.
-6. Keep unresolved issues explicit.
+1. 刷新 source manifest metadata。
+2. 比较状态、日期、替代关系和官方 locator。
+3. 如果有授权文本，按稳定 locator 比较 provisions。
+4. 将变化分类为 metadata refresh、new version、replacement、provision change、
+   withdrawal 或 unknown。
+5. 为低置信度或高影响变化生成 review tasks。
+6. 明确保留 unresolved issues。
 
-## Version Graph Fields
+## Version Graph 字段
 
-A change packet should preserve:
+Change packet 应保留：
 
-- old and new document IDs;
-- old and new source IDs;
-- relation type;
-- old and new status;
-- old and new effective dates when known;
-- evidence locators.
+- old/new document ID；
+- old/new source ID；
+- 关系类型；
+- old/new status；
+- 已知时记录 old/new effective date；
+- 证据 locator。
 
-## Watchlist Fields
+## Watchlist 字段
 
-A future watchlist record should include:
+后续 watchlist record 建议包含：
 
-- source ID;
-- official URL;
-- check cadence;
-- last checked time;
-- last seen status;
-- last seen hash or metadata fingerprint;
-- next review task.
+- source ID；
+- 官方 URL；
+- 检查频率；
+- last checked time；
+- last seen status；
+- last seen hash 或 metadata fingerprint；
+- next review task。

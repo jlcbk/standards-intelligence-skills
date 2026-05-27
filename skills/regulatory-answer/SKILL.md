@@ -1,32 +1,30 @@
 ---
 name: regulatory-answer
-description: Answer questions about standards, regulations, policy notices, provisions, applicability, dates, exceptions, and compliance implications using citation-backed answer packets. Use when PI agent needs to produce a traceable answer with version safety and unresolved issues.
+description: 用带 citation 的 answer packet 回答标准、法规、政策通知、条款、适用性、日期、例外和合规影响问题。用于 PI agent 需要生成可追溯答案、版本安全说明和 unresolved issues 的场景。
 ---
 
 # Regulatory Answer
 
-Use this skill to answer a user or workflow question from structured provisions
-and source manifests.
+使用这个 skill，从结构化 provisions 和 source manifests 回答用户或 workflow 问题。
 
 ## Workflow
 
-1. Restate the question as a scoped query: jurisdiction, document family,
-   product/process, date, and version constraints.
-2. Search reviewed or verified provisions first.
-3. Use candidate provisions only when explicitly allowed and label the answer as
-   provisional.
-4. Separate primary source text, interpretation, and workflow recommendation.
-5. Build an answer packet with citations, conditions, exceptions, version status,
-   confidence, and unresolved issues.
-6. If source coverage is incomplete, say what is missing instead of guessing.
+1. 先把问题重述为带 scope 的查询：jurisdiction、document family、
+   product/process、date 和 version constraints。
+2. 优先搜索 reviewed 或 verified provisions。
+3. 只有在明确允许时才使用 candidate provisions，并把答案标记为 provisional。
+4. 区分 primary source text、interpretation 和 workflow recommendation。
+5. 生成 answer packet，包含 citations、conditions、exceptions、version status、
+   confidence 和 unresolved issues。
+6. 如果来源覆盖不完整，说明缺什么，不要猜。
 
 ## Quality Gate
 
-- Every normative answer has at least one citation.
-- Version status is explicit.
-- Conditions and exceptions are not omitted.
-- The answer does not claim legal or certification sign-off.
+- 每个规范性回答至少有一个 citation。
+- 版本状态必须明确。
+- 条件和例外不得遗漏。
+- 答案不得声称法律意见或认证签字。
 
 ## Output
 
-Use `schemas/answer-packet.schema.json`.
+使用 `schemas/answer-packet.schema.json`。

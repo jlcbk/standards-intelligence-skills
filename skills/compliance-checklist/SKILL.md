@@ -1,35 +1,32 @@
 ---
 name: compliance-checklist
-description: Convert reviewed provisions and requirements into compliance checklist items, controls, evidence requests, owners, due dates, and review status. Use when PI agent needs to connect standards intelligence to a practical compliance workflow.
+description: 将 reviewed provisions 和 requirements 转成 compliance checklist items、controls、evidence requests、owners、due dates 和 review status。用于 PI agent 需要把标准智能结果连接到实际合规工作流的场景。
 ---
 
 # Compliance Checklist
 
-Use this skill to turn reviewed provisions into actionable compliance work.
+使用这个 skill，把 reviewed provisions 转成可执行的合规工作项。
 
 ## Workflow
 
-1. Start only from reviewed or verified provisions unless the user explicitly
-   asks for a draft checklist.
-2. Extract requirement fields: subject, action, object, condition, exception,
-   evidence, frequency, and responsible role.
-3. Map each requirement to one or more controls.
-4. Define required evidence and acceptance criteria.
-5. Track owner, due date, status, and unresolved questions.
-6. Preserve provision citations on every checklist item.
+1. 默认只从 reviewed 或 verified provisions 开始，除非用户明确要求 draft checklist。
+2. 抽取 requirement 字段：subject、action、object、condition、exception、
+   evidence、frequency 和 responsible role。
+3. 将每个 requirement 映射到一个或多个 controls。
+4. 定义所需 evidence 和 acceptance criteria。
+5. 跟踪 owner、due date、status 和 unresolved questions。
+6. 每个 checklist item 都保留 provision citations。
 
 ## Quality Gate
 
-- Each checklist item traces to a provision.
-- Evidence requirements are concrete and inspectable.
-- Ambiguous applicability is marked for review.
-- Draft checklists do not claim final compliance.
+- 每个 checklist item 都能追溯到 provision。
+- Evidence requirements 必须具体、可检查。
+- 适用性模糊时必须标记为 review。
+- Draft checklist 不得声称最终合规。
 
 ## Output
 
-Use `schemas/compliance-checklist.schema.json`.
+使用 `schemas/compliance-checklist.schema.json`。
 
-For public demos, checklist items may be synthetic workflow examples. For
-production or private/BYOD runs, checklist items must be backed by reviewed or
-verified provisions and should not claim final compliance until a responsible
-human reviewer approves them.
+公开 demo 可以使用 synthetic workflow examples。生产或私有 BYOD 运行中，
+checklist items 必须由 reviewed/verified provisions 支撑，并且在负责人批准前不得声称最终合规。

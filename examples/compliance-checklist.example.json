@@ -1,6 +1,6 @@
 {
   "checklist_id": "chk-demo-gb-vehicle-safety-001",
-  "title": "Synthetic GB vehicle safety workflow checklist",
+  "title": "Synthetic GB 车辆安全 workflow checklist",
   "scope": {
     "jurisdiction": "CN",
     "demo_id": "gb-vehicle-safety",
@@ -14,76 +14,76 @@
   "items": [
     {
       "item_id": "chk-item-001",
-      "requirement_summary": "Collect vehicle identity, use context, inspection date, and separate safety-system findings.",
+      "requirement_summary": "收集车辆身份、使用场景、检查日期和分系统安全检查结果。",
       "source_provision_ids": [
         "syn-gb7258-scope-001",
         "syn-gb7258-checks-001"
       ],
-      "control": "Create one traceable inspection record with separate sections for each checked safety system.",
+      "control": "创建一份可追溯检查记录，并为每个安全系统保留独立检查项。",
       "evidence_required": [
-        "vehicle identity record",
-        "inspection date",
-        "system-level finding notes"
+        "车辆身份记录",
+        "检查日期",
+        "系统级检查记录"
       ],
-      "owner_role": "inspection reviewer",
+      "owner_role": "检查 reviewer",
       "status": "todo",
       "risk_level": "medium",
       "acceptance_criteria": [
-        "Evidence is linked to the vehicle identity.",
-        "Safety-system findings are not merged into one untraceable note."
+        "证据已关联车辆身份。",
+        "安全系统检查结果没有合并成不可追溯的一条备注。"
       ],
       "unresolved_issues": [
-        "Synthetic demo only; authorized GB 7258 clauses are required before production use."
+        "仅为 synthetic demo；生产使用前需要授权 GB 7258 条款。"
       ]
     },
     {
       "item_id": "chk-item-002",
-      "requirement_summary": "Collect vehicle configuration, measured dimensions, axle-load or mass values, units, and measurement context before evaluating limits.",
+      "requirement_summary": "评估限值前，收集车辆配置、实测尺寸、轴荷或质量数值、单位和测量场景。",
       "source_provision_ids": [
         "syn-gb1589-scope-001",
         "syn-gb1589-measurement-001"
       ],
-      "control": "Record measurement evidence and comparator assumptions before any limit check.",
+      "control": "在任何限值检查前记录测量证据和比较假设。",
       "evidence_required": [
-        "vehicle category",
-        "trailer or combination status",
-        "measured values",
-        "units",
-        "measurement context"
+        "车辆类别",
+        "挂车或汽车列车状态",
+        "实测数值",
+        "单位",
+        "测量场景"
       ],
-      "owner_role": "measurement reviewer",
+      "owner_role": "测量 reviewer",
       "status": "todo",
       "risk_level": "medium",
       "acceptance_criteria": [
-        "Every measured value has a unit.",
-        "Vehicle configuration is available before comparison."
+        "每个实测值都有单位。",
+        "比较前已经取得车辆配置。"
       ],
       "unresolved_issues": [
-        "Synthetic demo only; authorized GB 1589 clauses are required before production use."
+        "仅为 synthetic demo；生产使用前需要授权 GB 1589 条款。"
       ]
     },
     {
       "item_id": "chk-item-003",
-      "requirement_summary": "Mark applicability as unresolved when vehicle configuration or special-use status is missing.",
+      "requirement_summary": "缺少车辆配置或特殊用途状态时，将适用性标记为 unresolved。",
       "source_provision_ids": [
         "syn-gb7258-exception-001",
         "syn-gb1589-applicability-001"
       ],
-      "control": "Block pass/fail answers until applicability evidence is available.",
+      "control": "在取得适用性证据前，阻止输出 pass/fail 答案。",
       "evidence_required": [
-        "configuration notes",
-        "special-use status",
-        "reviewer applicability decision"
+        "配置说明",
+        "特殊用途状态",
+        "reviewer 适用性决定"
       ],
-      "owner_role": "compliance reviewer",
+      "owner_role": "合规 reviewer",
       "status": "blocked",
       "risk_level": "high",
       "acceptance_criteria": [
-        "Applicability decision is recorded.",
-        "Missing configuration data is resolved or explicitly escalated."
+        "适用性决定已记录。",
+        "缺失配置数据已解决或明确升级。"
       ],
       "unresolved_issues": [
-        "Requires real vehicle facts and authorized source text."
+        "需要真实车辆事实和授权来源文本。"
       ]
     }
   ],
@@ -102,7 +102,7 @@
     }
   ],
   "unresolved_issues": [
-    "This checklist is a synthetic workflow artifact, not an authoritative GB compliance checklist.",
-    "Production use requires authorized source text and human review."
+    "这个 checklist 是 synthetic workflow artifact，不是权威 GB 合规检查清单。",
+    "生产使用需要授权来源文本和人类 review。"
   ]
 }

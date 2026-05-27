@@ -1,24 +1,24 @@
-# PI-Agent Contract
+# PI-Agent 契约
 
-The PI agent is a thin harness. It coordinates work but does not hide policy or
-domain workflow inside ad hoc prompts.
+PI agent 是一个薄调度层。它负责协调任务，但不应该把策略和领域 workflow 隐藏在
+临时 prompt 里。
 
-## Required Loop
+## 必须遵守的循环
 
-For every task:
+每个任务都应按以下流程运行：
 
-1. Identify the requested outcome.
-2. Select one primary skill from `skills/index.json`.
-3. Load that skill's `SKILL.md`.
-4. Read only the extra references or source files needed for the task.
-5. Produce artifacts that match the relevant schemas.
-6. Run validation.
-7. Write a run log.
-8. Propose a skill update when the task reveals a reusable improvement.
+1. 识别用户真正要的 outcome。
+2. 从 `skills/index.json` 选择一个 primary skill。
+3. 加载对应的 `SKILL.md`。
+4. 只读取任务需要的额外 references 或 source files。
+5. 产出符合 schema 的 artifacts。
+6. 运行 validation。
+7. 写 run log。
+8. 如果任务暴露了可复用改进点，提出 skill 更新。
 
-## Inputs
+## 输入
 
-The PI agent should pass each skill a task packet:
+PI agent 应传入一个 task packet：
 
 ```json
 {
@@ -30,29 +30,28 @@ The PI agent should pass each skill a task packet:
 }
 ```
 
-## Outputs
+## 输出
 
-Each run should produce at least one of:
+每次运行至少应产出以下一种 artifact：
 
-- `source_manifest` records
-- `provision` records
-- `answer_packet` records
-- `change_packet` records
-- `compliance_checklist` records
-- `skill_run_log` records
+- `source_manifest`
+- `provision`
+- `answer_packet`
+- `change_packet`
+- `compliance_checklist`
+- `skill_run_log`
 
-## Guardrails
+## 护栏
 
-- Do not treat candidate content as reviewed or verified.
-- Do not redistribute restricted standards text in public artifacts.
-- Do not answer without citations when the question depends on source text.
-- Do not mix draft, superseded, and effective versions without saying so.
-- Do not convert interpretation into primary law or primary standard text.
+- 不要把 candidate 内容当成 reviewed 或 verified。
+- 不要在公开 artifacts 中再分发受限标准正文。
+- 如果问题依赖来源文本，不要在没有 citation 的情况下回答。
+- 不要混用 draft、superseded、effective 版本而不说明。
+- 不要把解释性建议说成 primary law 或 primary standard text。
 
-## Handoff Format
+## GitHub Handoff 格式
 
-When GitHub work is needed, the PI agent should hand a concrete request to the
-GitHub operator:
+需要 GitHub 操作时，PI agent 应给 GitHub operator 一个明确请求：
 
 ```text
 Please create/update repo <name>.
