@@ -36,8 +36,9 @@ standards-skills run-task \
 ## 设计边界
 
 `--validate` 会调用 `standards-skills validate`，检查 skill metadata，并把
-`examples/` 与 `demos/` 中的 artifact 按对应 JSON Schema 校验。它是轻量本地质量门，
-不是模型评测、法律审查或合规认证。
+`examples/` 与 `demos/` 中的 artifact 按对应 JSON Schema 校验。对 demo，它还会检查
+coverage count 和 citation/source/provision 引用一致性。它是轻量本地质量门，不是模型评测、
+法律审查或合规认证。
 
 Runner 必须保持轻量：
 

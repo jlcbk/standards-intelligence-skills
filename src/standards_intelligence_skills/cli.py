@@ -273,6 +273,158 @@ def validate_jsonl(path: Path, schema: dict[str, Any] | None = None) -> list[str
     return errors
 
 
+def read_jsonl_objects(path: Path) -> tuple[list[tuple[str, dict[str, Any]]], list[str]]:
+    records: list[tuple[str, dict[str, Any]]] = []
+    errors: list[str] = []
+    if not path.exists():
+        return records, [f"{path}: 缺少文件"]
+
+    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if not line.strip():
+            continue
+        label = f"{path}:{line_number}"
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{label}: JSONL 无效：{exc}")
+            continue
+        if not isinstance(record, dict):
+            errors.append(f"{label}: JSONL record 必须是 object")
+            continue
+        records.append((label, record))
+    return records, errors
+
+
+def validate_citation_refs(
+    *,
+    label: str,
+    citations: Any,
+    source_ids: set[str],
+    provision_source_ids: dict[str, str],
+) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(citations, list):
+        return errors
+
+    for index, citation in enumerate(citations):
+        citation_label = f"{label}.citations[{index}]"
+        if not isinstance(citation, dict):
+            continue
+        provision_id = citation.get("provision_id")
+        source_id = citation.get("source_id")
+        if isinstance(provision_id, str) and provision_id not in provision_source_ids:
+            errors.append(f"{citation_label}: provision_id 不存在：{provision_id}")
+        if isinstance(source_id, str) and source_id not in source_ids:
+            errors.append(f"{citation_label}: source_id 不存在：{source_id}")
+        if (
+            isinstance(provision_id, str)
+            and isinstance(source_id, str)
+            and provision_id in provision_source_ids
+            and source_id != provision_source_ids[provision_id]
+        ):
+            errors.append(
+                f"{citation_label}: source_id {source_id} 与 provision {provision_id} 的 source_id "
+                f"{provision_source_ids[provision_id]} 不一致"
+            )
+    return errors
+
+
+def validate_demo_integrity(demo_root: Path) -> list[str]:
+    errors: list[str] = []
+    source_records, source_errors = read_jsonl_objects(demo_root / "source-manifest.jsonl")
+    provision_records, provision_errors = read_jsonl_objects(demo_root / "provisions.synthetic.jsonl")
+    answer_records, answer_errors = read_jsonl_objects(demo_root / "answer-packets.synthetic.jsonl")
+    errors.extend(source_errors)
+    errors.extend(provision_errors)
+    errors.extend(answer_errors)
+    if source_errors or provision_errors or answer_errors:
+        return errors
+
+    source_ids = {
+        record["source_id"]
+        for _, record in source_records
+        if isinstance(record.get("source_id"), str)
+    }
+    provision_source_ids = {
+        record["provision_id"]: record["source_id"]
+        for _, record in provision_records
+        if isinstance(record.get("provision_id"), str) and isinstance(record.get("source_id"), str)
+    }
+
+    for label, record in provision_records:
+        source_id = record.get("source_id")
+        if isinstance(source_id, str) and source_id not in source_ids:
+            errors.append(f"{label}: source_id 不存在于 source manifest：{source_id}")
+
+    for label, record in answer_records:
+        errors.extend(
+            validate_citation_refs(
+                label=label,
+                citations=record.get("citations"),
+                source_ids=source_ids,
+                provision_source_ids=provision_source_ids,
+            )
+        )
+
+    coverage_path = demo_root / "coverage-report.json"
+    try:
+        coverage = load_json(coverage_path)
+    except FileNotFoundError:
+        errors.append(f"{coverage_path}: 缺少文件")
+    except json.JSONDecodeError as exc:
+        errors.append(f"{coverage_path}: JSON 无效：{exc}")
+    else:
+        expected_counts = {
+            "source_count": len(source_records),
+            "provision_count": len(provision_records),
+            "answer_packet_count": len(answer_records),
+        }
+        for field, expected in expected_counts.items():
+            actual = coverage.get(field) if isinstance(coverage, dict) else None
+            if actual != expected:
+                errors.append(f"{coverage_path}: {field} 应为 {expected}，实际为 {short_json(actual)}")
+        if isinstance(coverage, dict) and "source_ids" in coverage:
+            actual_source_ids = coverage.get("source_ids")
+            if (
+                not isinstance(actual_source_ids, list)
+                or not all(isinstance(item, str) for item in actual_source_ids)
+                or set(actual_source_ids) != source_ids
+            ):
+                errors.append(f"{coverage_path}: source_ids 必须与 source manifest 完全一致")
+
+    for checklist_path in sorted(demo_root.glob("*checklist*.json")):
+        try:
+            checklist = load_json(checklist_path)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{checklist_path}: JSON 无效：{exc}")
+            continue
+        if not isinstance(checklist, dict):
+            continue
+        errors.extend(
+            validate_citation_refs(
+                label=str(checklist_path),
+                citations=checklist.get("citations"),
+                source_ids=source_ids,
+                provision_source_ids=provision_source_ids,
+            )
+        )
+        items = checklist.get("items")
+        if isinstance(items, list):
+            for index, item in enumerate(items):
+                if not isinstance(item, dict):
+                    continue
+                source_provision_ids = item.get("source_provision_ids", [])
+                if not isinstance(source_provision_ids, list):
+                    continue
+                for provision_id in source_provision_ids:
+                    if isinstance(provision_id, str) and provision_id not in provision_source_ids:
+                        errors.append(
+                            f"{checklist_path}.items[{index}]: source_provision_ids 不存在：{provision_id}"
+                        )
+
+    return errors
+
+
 def validate_root(root: Path) -> list[str]:
     errors: list[str] = []
 
@@ -350,6 +502,8 @@ def validate_root(root: Path) -> list[str]:
         for demo_jsonl in sorted(demos_dir.glob("*/*.jsonl")):
             schema = schema_for_file(schemas, SCHEMA_FILE_BY_DEMO, demo_jsonl, errors)
             errors.extend(validate_jsonl(demo_jsonl, schema))
+        for demo_root in sorted(path for path in demos_dir.iterdir() if path.is_dir()):
+            errors.extend(validate_demo_integrity(demo_root))
 
     return errors
 

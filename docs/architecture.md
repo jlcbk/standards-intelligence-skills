@@ -26,6 +26,7 @@
 5. **Validation**
    - 检查 skill metadata、schema 文件和 JSON/JSONL artifacts。
    - 按 `schemas/*.schema.json` 对 examples/demos 做 schema-aware validation。
+   - 对 demo 做 artifact integrity checks，例如 coverage count 和 citation 引用一致性。
    - 防止产物契约悄悄漂移。
 
 ## 为什么不做重 Agent
