@@ -35,6 +35,9 @@ The initial version focuses on five workflows:
 It intentionally does not ship copyrighted standards text. Public examples are
 synthetic and small.
 
+The initial durable artifact contracts cover source manifests, provisions,
+answer packets, change packets, coverage reports, and skill run logs.
+
 ## Repository Layout
 
 ```text

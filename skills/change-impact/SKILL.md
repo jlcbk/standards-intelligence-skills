@@ -27,12 +27,9 @@ Use this skill when a source, version, or document family has changed.
 
 ## Output
 
-Change packet schema will be added in P2. Until then, use a JSON object with:
+Use `schemas/change-packet.schema.json`.
 
-- `change_id`
-- `source_ids`
-- `version_relation`
-- `changed_provisions`
-- `affected_topics`
-- `review_tasks`
-- `confidence`
+For metadata-only public demos, change packets may describe source status,
+replacement relation, retrieval, or watchlist changes without quoting standard
+text. For private/BYOD runs, change packets may also include provision-level
+diff summaries when the input source license permits that processing.
