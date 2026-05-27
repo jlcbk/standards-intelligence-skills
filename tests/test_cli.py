@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -57,6 +58,35 @@ class CliTests(unittest.TestCase):
         self.assertEqual(example["status"], "draft_demo")
         self.assertEqual(len(example["items"]), 3)
         self.assertEqual(example["items"][2]["status"], "blocked")
+
+    def test_run_task_creates_run_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "run-log.json"
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = cli.main(
+                    [
+                        "--root",
+                        str(ROOT),
+                        "run-task",
+                        "--packet",
+                        "examples/task-packet.example.json",
+                        "--run-id",
+                        "run-test-task-001",
+                        "--output",
+                        str(output),
+                        "--validate",
+                    ]
+                )
+
+            self.assertEqual(code, 0)
+            summary = json.loads(out.getvalue())
+            run_log = json.loads(output.read_text(encoding="utf-8"))
+            self.assertTrue(summary["ok"])
+            self.assertEqual(summary["skill_name"], "regulatory-answer")
+            self.assertEqual(run_log["run_id"], "run-test-task-001")
+            self.assertEqual(run_log["status"], "passed")
+            self.assertTrue(run_log["validation"]["passed"])
 
     def test_new_run_log_outputs_json(self) -> None:
         out = io.StringIO()

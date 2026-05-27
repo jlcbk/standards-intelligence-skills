@@ -1,0 +1,18 @@
+{
+  "task_id": "task-demo-gb-answer-001",
+  "requested_outcome": "Create a citation-shaped answer packet for the GB vehicle safety demo.",
+  "skill_name": "regulatory-answer",
+  "source_refs": [
+    "demos/gb-vehicle-safety"
+  ],
+  "constraints": [
+    "public demo only",
+    "do not store standard PDF text",
+    "mark all outputs as synthetic unless authorized source text is available"
+  ],
+  "allowed_outputs": [
+    "answer_packet",
+    "skill_run_log"
+  ],
+  "human_decision_required": false
+}

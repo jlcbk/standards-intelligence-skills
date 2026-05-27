@@ -78,6 +78,14 @@ REQUIRED_EXAMPLE_FIELDS = {
         "citations",
         "unresolved_issues",
     },
+    "task-packet.example.json": {
+        "task_id",
+        "requested_outcome",
+        "skill_name",
+        "source_refs",
+        "constraints",
+        "allowed_outputs",
+    },
 }
 
 REQUIRED_DEMO_FIELDS = {
@@ -143,8 +151,47 @@ def discover_skills(root: Path) -> list[Skill]:
     return skills
 
 
+def find_skill(root: Path, name: str) -> Skill | None:
+    for skill in discover_skills(root):
+        if skill.name == name:
+            return skill
+    return None
+
+
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def build_run_log(
+    *,
+    skill_name: str,
+    task: str,
+    actor: str,
+    run_id: str | None = None,
+    status: str = "planned",
+    artifacts: list[str] | None = None,
+    validation_passed: bool = False,
+    validation_notes: str = "Fill after validation.",
+) -> dict[str, Any]:
+    return {
+        "run_id": run_id or f"run-{uuid.uuid4().hex[:12]}",
+        "skill_name": skill_name,
+        "task": task,
+        "actor": actor,
+        "started_at": utc_now(),
+        "status": status,
+        "artifacts": artifacts or [],
+        "validation": {
+            "command": "standards-skills validate",
+            "passed": validation_passed,
+            "notes": validation_notes,
+        },
+        "skill_updates_needed": [],
+    }
 
 
 def validate_jsonl(path: Path, required_fields: set[str] | None = None) -> list[str]:
@@ -270,10 +317,10 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 def cmd_show(args: argparse.Namespace) -> int:
     root = repo_root_from(Path(args.root) if args.root else None)
-    for skill in discover_skills(root):
-        if skill.name == args.skill:
-            print(skill.path.read_text(encoding="utf-8"))
-            return 0
+    skill = find_skill(root, args.skill)
+    if skill:
+        print(skill.path.read_text(encoding="utf-8"))
+        return 0
     print(f"unknown skill: {args.skill}", file=sys.stderr)
     return 2
 
@@ -293,22 +340,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 
 def cmd_new_run_log(args: argparse.Namespace) -> int:
-    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    payload = {
-        "run_id": args.run_id or f"run-{uuid.uuid4().hex[:12]}",
-        "skill_name": args.skill,
-        "task": args.task,
-        "actor": args.actor,
-        "started_at": now,
-        "status": "planned",
-        "artifacts": [],
-        "validation": {
-            "command": "standards-skills validate",
-            "passed": False,
-            "notes": "Fill after validation.",
-        },
-        "skill_updates_needed": [],
-    }
+    payload = build_run_log(skill_name=args.skill, task=args.task, actor=args.actor, run_id=args.run_id)
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
     if args.output:
         output = Path(args.output)
@@ -317,6 +349,69 @@ def cmd_new_run_log(args: argparse.Namespace) -> int:
     else:
         print(text, end="")
     return 0
+
+
+def cmd_run_task(args: argparse.Namespace) -> int:
+    root = repo_root_from(Path(args.root) if args.root else None)
+    packet_path = Path(args.packet)
+    if not packet_path.is_absolute():
+        packet_path = root / packet_path
+    try:
+        packet = load_json(packet_path)
+    except json.JSONDecodeError as exc:
+        print(f"{packet_path}: invalid JSON: {exc}", file=sys.stderr)
+        return 2
+
+    skill_name = args.skill or packet.get("skill_name")
+    if not skill_name:
+        print("task packet must include skill_name or --skill must be provided", file=sys.stderr)
+        return 2
+
+    skill = find_skill(root, skill_name)
+    if not skill:
+        print(f"unknown skill: {skill_name}", file=sys.stderr)
+        return 2
+
+    task = packet.get("requested_outcome") or packet.get("task") or f"Run {skill_name}"
+    artifacts = packet.get("allowed_outputs", [])
+    if not isinstance(artifacts, list):
+        print("task packet allowed_outputs must be a list", file=sys.stderr)
+        return 2
+
+    validation_errors = validate_root(root) if args.validate else []
+    validation_passed = args.validate and not validation_errors
+    status = "passed" if validation_passed else "failed" if validation_errors else "planned"
+    notes = "Validation passed." if validation_passed else "Validation not requested."
+    if validation_errors:
+        notes = "; ".join(validation_errors)
+
+    run_log = build_run_log(
+        skill_name=skill_name,
+        task=task,
+        actor=args.actor,
+        run_id=args.run_id,
+        status=status,
+        artifacts=[str(item) for item in artifacts],
+        validation_passed=validation_passed,
+        validation_notes=notes,
+    )
+
+    output = Path(args.output) if args.output else root / "runs" / f"{run_log['run_id']}.json"
+    if not output.is_absolute():
+        output = root / output
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(run_log, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    summary = {
+        "ok": not validation_errors,
+        "task_id": packet.get("task_id"),
+        "skill_name": skill_name,
+        "skill_path": str(skill.path.relative_to(root)),
+        "run_log": str(output.relative_to(root) if output.is_relative_to(root) else output),
+        "validation_errors": validation_errors,
+    }
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return 1 if validation_errors else 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -343,6 +438,15 @@ def build_parser() -> argparse.ArgumentParser:
     run_log_parser.add_argument("--run-id", help="Optional stable run ID.")
     run_log_parser.add_argument("--output", help="Optional output path.")
     run_log_parser.set_defaults(func=cmd_new_run_log)
+
+    run_task_parser = subparsers.add_parser("run-task", help="Select a skill from a task packet.")
+    run_task_parser.add_argument("--packet", required=True, help="Task packet JSON path.")
+    run_task_parser.add_argument("--skill", help="Override skill_name from the packet.")
+    run_task_parser.add_argument("--actor", default="pi-agent", help="Actor name.")
+    run_task_parser.add_argument("--run-id", help="Optional stable run ID.")
+    run_task_parser.add_argument("--output", help="Run log output path. Defaults to runs/<run_id>.json.")
+    run_task_parser.add_argument("--validate", action="store_true", help="Run repository validation first.")
+    run_task_parser.set_defaults(func=cmd_run_task)
 
     return parser
 
