@@ -1,0 +1,14 @@
+{
+  "provision_id": "prov-demo-001",
+  "source_id": "src-demo-001",
+  "document_id": "doc-demo-vehicle-safety",
+  "locator": "section 1.1",
+  "heading_path": ["Synthetic requirements", "Safety notice"],
+  "text": "A demonstration vehicle record should include an inspection date.",
+  "review_status": "reviewed",
+  "version_status": "current",
+  "effective_date": "2026-01-01",
+  "topics": ["inspection-records"],
+  "entities": ["demonstration-vehicle"],
+  "extraction_notes": "Synthetic example for schema validation."
+}

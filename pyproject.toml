@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "standards-intelligence-skills"
+version = "0.1.0"
+description = "A lightweight standards intelligence skill pack for PI-agent workflows."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary until the repository owner chooses a license" }
+authors = [{ name = "jlcbk" }]
+dependencies = []
+
+[project.scripts]
+standards-skills = "standards_intelligence_skills.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

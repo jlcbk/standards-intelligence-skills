@@ -1,0 +1,16 @@
+{
+  "run_id": "run-demo-001",
+  "skill_name": "regulatory-answer",
+  "task": "Answer a synthetic inspection date question.",
+  "actor": "pi-agent",
+  "started_at": "2026-05-27T00:00:00Z",
+  "finished_at": "2026-05-27T00:01:00Z",
+  "status": "passed",
+  "artifacts": ["examples/answer-packet.example.json"],
+  "validation": {
+    "command": "standards-skills validate",
+    "passed": true,
+    "notes": "Synthetic example validated."
+  },
+  "skill_updates_needed": []
+}

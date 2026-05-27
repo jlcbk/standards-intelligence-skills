@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/source-manifest.schema.json",
+  "title": "SourceManifestRecord",
+  "type": "object",
+  "required": [
+    "source_id",
+    "title",
+    "source_type",
+    "issuer",
+    "jurisdiction",
+    "access_level",
+    "redistribution_policy",
+    "locator"
+  ],
+  "properties": {
+    "source_id": {"type": "string"},
+    "title": {"type": "string"},
+    "source_type": {"type": "string"},
+    "issuer": {"type": "string"},
+    "jurisdiction": {"type": "string"},
+    "access_level": {
+      "type": "string",
+      "enum": [
+        "public_web",
+        "public_metadata",
+        "restricted_standard",
+        "private_document",
+        "unknown"
+      ]
+    },
+    "redistribution_policy": {
+      "type": "string",
+      "enum": [
+        "public_ok",
+        "metadata_only",
+        "private_processing_only",
+        "do_not_store",
+        "unknown"
+      ]
+    },
+    "locator": {
+      "type": "object",
+      "properties": {
+        "url": {"type": "string"},
+        "path": {"type": "string"},
+        "official_id": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "retrieved_at": {"type": "string"},
+    "sha256": {"type": "string"},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": true
+}

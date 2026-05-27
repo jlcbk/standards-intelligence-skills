@@ -1,0 +1,23 @@
+{
+  "answer_id": "ans-demo-001",
+  "question": "Does the demonstration vehicle record need an inspection date?",
+  "short_answer": "Yes, for this synthetic example the record should include an inspection date.",
+  "scope": {
+    "jurisdiction": "EX",
+    "document_id": "doc-demo-vehicle-safety",
+    "date": "2026-05-27"
+  },
+  "citations": [
+    {
+      "provision_id": "prov-demo-001",
+      "source_id": "src-demo-001",
+      "locator": "section 1.1",
+      "quote_policy": "synthetic_public_ok"
+    }
+  ],
+  "conditions": [],
+  "exceptions": [],
+  "version_safety": "current",
+  "confidence": "high",
+  "unresolved_issues": []
+}

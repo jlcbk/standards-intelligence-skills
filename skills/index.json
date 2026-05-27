@@ -1,0 +1,32 @@
+[
+  {
+    "name": "source-intake",
+    "path": "skills/source-intake/SKILL.md",
+    "primary_outputs": ["source_manifest"],
+    "summary": "Register sources with access, provenance, and redistribution boundaries."
+  },
+  {
+    "name": "provision-compiler",
+    "path": "skills/provision-compiler/SKILL.md",
+    "primary_outputs": ["provision"],
+    "summary": "Compile source text into clause-level provisions with locators."
+  },
+  {
+    "name": "regulatory-answer",
+    "path": "skills/regulatory-answer/SKILL.md",
+    "primary_outputs": ["answer_packet"],
+    "summary": "Answer standards and regulatory questions with citations and version safety."
+  },
+  {
+    "name": "change-impact",
+    "path": "skills/change-impact/SKILL.md",
+    "primary_outputs": ["change_packet"],
+    "summary": "Analyze source or version changes and produce impact packets."
+  },
+  {
+    "name": "compliance-checklist",
+    "path": "skills/compliance-checklist/SKILL.md",
+    "primary_outputs": ["compliance_checklist"],
+    "summary": "Map provisions to controls, evidence, owners, and review status."
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/answer-packet.schema.json",
+  "title": "AnswerPacket",
+  "type": "object",
+  "required": [
+    "answer_id",
+    "question",
+    "short_answer",
+    "scope",
+    "citations",
+    "version_safety",
+    "confidence",
+    "unresolved_issues"
+  ],
+  "properties": {
+    "answer_id": {"type": "string"},
+    "question": {"type": "string"},
+    "short_answer": {"type": "string"},
+    "scope": {"type": "object", "additionalProperties": true},
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provision_id", "locator"],
+        "properties": {
+          "provision_id": {"type": "string"},
+          "source_id": {"type": "string"},
+          "locator": {"type": "string"},
+          "quote_policy": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "conditions": {"type": "array", "items": {"type": "string"}},
+    "exceptions": {"type": "array", "items": {"type": "string"}},
+    "version_safety": {
+      "type": "string",
+      "enum": ["current", "draft", "superseded", "mixed", "unknown"]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "unresolved_issues": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/provision.schema.json",
+  "title": "Provision",
+  "type": "object",
+  "required": [
+    "provision_id",
+    "source_id",
+    "document_id",
+    "locator",
+    "text",
+    "review_status",
+    "version_status"
+  ],
+  "properties": {
+    "provision_id": {"type": "string"},
+    "source_id": {"type": "string"},
+    "document_id": {"type": "string"},
+    "locator": {"type": "string"},
+    "heading_path": {"type": "array", "items": {"type": "string"}},
+    "text": {"type": "string"},
+    "review_status": {
+      "type": "string",
+      "enum": ["candidate", "reviewed", "verified", "rejected"]
+    },
+    "version_status": {
+      "type": "string",
+      "enum": ["current", "draft", "superseded", "unknown"]
+    },
+    "effective_date": {"type": "string"},
+    "topics": {"type": "array", "items": {"type": "string"}},
+    "entities": {"type": "array", "items": {"type": "string"}},
+    "extraction_notes": {"type": "string"}
+  },
+  "additionalProperties": true
+}

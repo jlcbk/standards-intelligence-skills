@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/skill-run-log.schema.json",
+  "title": "SkillRunLog",
+  "type": "object",
+  "required": [
+    "run_id",
+    "skill_name",
+    "task",
+    "actor",
+    "started_at",
+    "status",
+    "artifacts",
+    "validation"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "skill_name": {"type": "string"},
+    "task": {"type": "string"},
+    "actor": {"type": "string"},
+    "started_at": {"type": "string"},
+    "finished_at": {"type": "string"},
+    "status": {"type": "string", "enum": ["planned", "running", "passed", "failed"]},
+    "artifacts": {"type": "array", "items": {"type": "string"}},
+    "validation": {
+      "type": "object",
+      "required": ["command", "passed"],
+      "properties": {
+        "command": {"type": "string"},
+        "passed": {"type": "boolean"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "skill_updates_needed": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
