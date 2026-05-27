@@ -1,0 +1,108 @@
+{
+  "checklist_id": "chk-demo-gb-vehicle-safety-001",
+  "title": "Synthetic GB vehicle safety workflow checklist",
+  "scope": {
+    "jurisdiction": "CN",
+    "demo_id": "gb-vehicle-safety",
+    "documents": [
+      "gb-7258-2017",
+      "gb-1589-2016"
+    ],
+    "date": "2026-05-27"
+  },
+  "status": "draft_demo",
+  "items": [
+    {
+      "item_id": "chk-item-001",
+      "requirement_summary": "Collect vehicle identity, use context, inspection date, and separate safety-system findings.",
+      "source_provision_ids": [
+        "syn-gb7258-scope-001",
+        "syn-gb7258-checks-001"
+      ],
+      "control": "Create one traceable inspection record with separate sections for each checked safety system.",
+      "evidence_required": [
+        "vehicle identity record",
+        "inspection date",
+        "system-level finding notes"
+      ],
+      "owner_role": "inspection reviewer",
+      "status": "todo",
+      "risk_level": "medium",
+      "acceptance_criteria": [
+        "Evidence is linked to the vehicle identity.",
+        "Safety-system findings are not merged into one untraceable note."
+      ],
+      "unresolved_issues": [
+        "Synthetic demo only; authorized GB 7258 clauses are required before production use."
+      ]
+    },
+    {
+      "item_id": "chk-item-002",
+      "requirement_summary": "Collect vehicle configuration, measured dimensions, axle-load or mass values, units, and measurement context before evaluating limits.",
+      "source_provision_ids": [
+        "syn-gb1589-scope-001",
+        "syn-gb1589-measurement-001"
+      ],
+      "control": "Record measurement evidence and comparator assumptions before any limit check.",
+      "evidence_required": [
+        "vehicle category",
+        "trailer or combination status",
+        "measured values",
+        "units",
+        "measurement context"
+      ],
+      "owner_role": "measurement reviewer",
+      "status": "todo",
+      "risk_level": "medium",
+      "acceptance_criteria": [
+        "Every measured value has a unit.",
+        "Vehicle configuration is available before comparison."
+      ],
+      "unresolved_issues": [
+        "Synthetic demo only; authorized GB 1589 clauses are required before production use."
+      ]
+    },
+    {
+      "item_id": "chk-item-003",
+      "requirement_summary": "Mark applicability as unresolved when vehicle configuration or special-use status is missing.",
+      "source_provision_ids": [
+        "syn-gb7258-exception-001",
+        "syn-gb1589-applicability-001"
+      ],
+      "control": "Block pass/fail answers until applicability evidence is available.",
+      "evidence_required": [
+        "configuration notes",
+        "special-use status",
+        "reviewer applicability decision"
+      ],
+      "owner_role": "compliance reviewer",
+      "status": "blocked",
+      "risk_level": "high",
+      "acceptance_criteria": [
+        "Applicability decision is recorded.",
+        "Missing configuration data is resolved or explicitly escalated."
+      ],
+      "unresolved_issues": [
+        "Requires real vehicle facts and authorized source text."
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "provision_id": "syn-gb7258-scope-001",
+      "source_id": "src-gb-7258-2017",
+      "locator": "synthetic/scope",
+      "quote_policy": "synthetic_paraphrase"
+    },
+    {
+      "provision_id": "syn-gb1589-scope-001",
+      "source_id": "src-gb-1589-2016",
+      "locator": "synthetic/scope",
+      "quote_policy": "synthetic_paraphrase"
+    }
+  ],
+  "unresolved_issues": [
+    "This checklist is a synthetic workflow artifact, not an authoritative GB compliance checklist.",
+    "Production use requires authorized source text and human review."
+  ]
+}

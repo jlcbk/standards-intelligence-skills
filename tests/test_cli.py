@@ -49,6 +49,15 @@ class CliTests(unittest.TestCase):
         self.assertEqual(example["version_relation"]["relation"], "same_version_metadata_refresh")
         self.assertFalse(example["review_tasks"][0]["required_human_decision"])
 
+    def test_compliance_checklist_example_shape(self) -> None:
+        example = json.loads(
+            ROOT.joinpath("examples/compliance-checklist.example.json").read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(example["status"], "draft_demo")
+        self.assertEqual(len(example["items"]), 3)
+        self.assertEqual(example["items"][2]["status"], "blocked")
+
     def test_new_run_log_outputs_json(self) -> None:
         out = io.StringIO()
         with redirect_stdout(out):

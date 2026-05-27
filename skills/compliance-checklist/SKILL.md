@@ -27,11 +27,9 @@ Use this skill to turn reviewed provisions into actionable compliance work.
 
 ## Output
 
-Compliance checklist schema will be added in P3. Until then, use a JSON object
-with:
+Use `schemas/compliance-checklist.schema.json`.
 
-- `checklist_id`
-- `scope`
-- `items`
-- `citations`
-- `unresolved_issues`
+For public demos, checklist items may be synthetic workflow examples. For
+production or private/BYOD runs, checklist items must be backed by reviewed or
+verified provisions and should not claim final compliance until a responsible
+human reviewer approves them.
