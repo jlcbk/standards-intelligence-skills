@@ -42,6 +42,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(len([line for line in answers if line.strip()]), 5)
         self.assertFalse(coverage["content_boundary"]["standard_pdf_text_stored"])
 
+    def test_change_packet_example_shape(self) -> None:
+        example = json.loads(ROOT.joinpath("examples/change-packet.example.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(example["change_type"], "metadata_refresh")
+        self.assertEqual(example["version_relation"]["relation"], "same_version_metadata_refresh")
+        self.assertFalse(example["review_tasks"][0]["required_human_decision"])
+
     def test_new_run_log_outputs_json(self) -> None:
         out = io.StringIO()
         with redirect_stdout(out):

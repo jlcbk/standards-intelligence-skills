@@ -57,6 +57,18 @@ REQUIRED_EXAMPLE_FIELDS = {
         "artifacts",
         "validation",
     },
+    "change-packet.example.json": {
+        "change_id",
+        "change_type",
+        "detected_at",
+        "summary",
+        "version_relation",
+        "changed_provisions",
+        "affected_topics",
+        "review_tasks",
+        "confidence",
+        "unresolved_issues",
+    },
 }
 
 REQUIRED_DEMO_FIELDS = {
