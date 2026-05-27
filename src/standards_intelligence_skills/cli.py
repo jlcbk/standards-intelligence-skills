@@ -17,90 +17,21 @@ class Skill:
     path: Path
 
 
-REQUIRED_EXAMPLE_FIELDS = {
-    "source-manifest.example.jsonl": {
-        "source_id",
-        "title",
-        "source_type",
-        "issuer",
-        "jurisdiction",
-        "access_level",
-        "redistribution_policy",
-        "locator",
-    },
-    "provision.example.json": {
-        "provision_id",
-        "source_id",
-        "document_id",
-        "locator",
-        "text",
-        "review_status",
-        "version_status",
-    },
-    "answer-packet.example.json": {
-        "answer_id",
-        "question",
-        "short_answer",
-        "scope",
-        "citations",
-        "version_safety",
-        "confidence",
-        "unresolved_issues",
-    },
-    "skill-run-log.example.json": {
-        "run_id",
-        "skill_name",
-        "task",
-        "actor",
-        "started_at",
-        "status",
-        "artifacts",
-        "validation",
-    },
-    "change-packet.example.json": {
-        "change_id",
-        "change_type",
-        "detected_at",
-        "summary",
-        "version_relation",
-        "changed_provisions",
-        "affected_topics",
-        "review_tasks",
-        "confidence",
-        "unresolved_issues",
-    },
-    "compliance-checklist.example.json": {
-        "checklist_id",
-        "title",
-        "scope",
-        "status",
-        "items",
-        "citations",
-        "unresolved_issues",
-    },
-    "task-packet.example.json": {
-        "task_id",
-        "requested_outcome",
-        "skill_name",
-        "source_refs",
-        "constraints",
-        "allowed_outputs",
-    },
+SCHEMA_FILE_BY_EXAMPLE = {
+    "answer-packet.example.json": "answer-packet.schema.json",
+    "change-packet.example.json": "change-packet.schema.json",
+    "compliance-checklist.example.json": "compliance-checklist.schema.json",
+    "provision.example.json": "provision.schema.json",
+    "skill-run-log.example.json": "skill-run-log.schema.json",
+    "source-manifest.example.jsonl": "source-manifest.schema.json",
+    "task-packet.example.json": "task-packet.schema.json",
 }
 
-REQUIRED_DEMO_FIELDS = {
-    "source-manifest.jsonl": REQUIRED_EXAMPLE_FIELDS["source-manifest.example.jsonl"],
-    "provisions.synthetic.jsonl": REQUIRED_EXAMPLE_FIELDS["provision.example.json"],
-    "answer-packets.synthetic.jsonl": REQUIRED_EXAMPLE_FIELDS["answer-packet.example.json"],
-    "coverage-report.json": {
-        "demo_id",
-        "title",
-        "source_count",
-        "provision_count",
-        "answer_packet_count",
-        "content_boundary",
-        "validation",
-    },
+SCHEMA_FILE_BY_DEMO = {
+    "answer-packets.synthetic.jsonl": "answer-packet.schema.json",
+    "coverage-report.json": "coverage-report.schema.json",
+    "provisions.synthetic.jsonl": "provision.schema.json",
+    "source-manifest.jsonl": "source-manifest.schema.json",
 }
 
 
@@ -194,9 +125,134 @@ def build_run_log(
     }
 
 
-def validate_jsonl(path: Path, required_fields: set[str] | None = None) -> list[str]:
+def json_type_name(value: Any) -> str:
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, dict):
+        return "object"
+    if isinstance(value, list):
+        return "array"
+    if isinstance(value, str):
+        return "string"
+    if isinstance(value, int):
+        return "integer"
+    if isinstance(value, float):
+        return "number"
+    if value is None:
+        return "null"
+    return type(value).__name__
+
+
+def matches_json_type(value: Any, expected_type: str) -> bool:
+    if expected_type == "object":
+        return isinstance(value, dict)
+    if expected_type == "array":
+        return isinstance(value, list)
+    if expected_type == "string":
+        return isinstance(value, str)
+    if expected_type == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if expected_type == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if expected_type == "boolean":
+        return isinstance(value, bool)
+    if expected_type == "null":
+        return value is None
+    return True
+
+
+def join_instance_path(base: str, key: str | int) -> str:
+    if isinstance(key, int):
+        return f"{base}[{key}]"
+    if key.replace("_", "").replace("-", "").isalnum():
+        return f"{base}.{key}"
+    return f"{base}[{json.dumps(key, ensure_ascii=False)}]"
+
+
+def short_json(value: Any) -> str:
+    text = json.dumps(value, ensure_ascii=False)
+    return text if len(text) <= 80 else text[:77] + "..."
+
+
+def validate_instance_against_schema(instance: Any, schema: dict[str, Any], path: str = "$") -> list[str]:
     errors: list[str] = []
-    required = required_fields if required_fields is not None else REQUIRED_EXAMPLE_FIELDS.get(path.name, set())
+
+    expected = schema.get("type")
+    expected_types = expected if isinstance(expected, list) else [expected] if isinstance(expected, str) else []
+    if expected_types and not any(matches_json_type(instance, item) for item in expected_types):
+        errors.append(
+            f"{path}: 类型应为 {'/'.join(expected_types)}，实际为 {json_type_name(instance)}"
+        )
+        return errors
+
+    if "enum" in schema and instance not in schema["enum"]:
+        errors.append(f"{path}: 取值 {short_json(instance)} 不在允许列表中")
+
+    if isinstance(instance, dict):
+        required = schema.get("required", [])
+        for field in required:
+            if field not in instance:
+                errors.append(f"{path}: 缺少必填字段 {field}")
+
+        properties = schema.get("properties", {})
+        if isinstance(properties, dict):
+            for field, subschema in properties.items():
+                if field in instance and isinstance(subschema, dict):
+                    errors.extend(
+                        validate_instance_against_schema(
+                            instance[field],
+                            subschema,
+                            join_instance_path(path, field),
+                        )
+                    )
+
+            additional = schema.get("additionalProperties", True)
+            extra_fields = sorted(set(instance) - set(properties))
+            if additional is False:
+                for field in extra_fields:
+                    errors.append(f"{path}: 不允许额外字段 {field}")
+            elif isinstance(additional, dict):
+                for field in extra_fields:
+                    errors.extend(
+                        validate_instance_against_schema(
+                            instance[field],
+                            additional,
+                            join_instance_path(path, field),
+                        )
+                    )
+
+    if isinstance(instance, list):
+        items_schema = schema.get("items")
+        if isinstance(items_schema, dict):
+            for index, item in enumerate(instance):
+                errors.extend(validate_instance_against_schema(item, items_schema, join_instance_path(path, index)))
+
+    return errors
+
+
+def schema_errors_for_record(record: Any, schema: dict[str, Any], label: str) -> list[str]:
+    return [f"{label}: schema 校验失败：{error}" for error in validate_instance_against_schema(record, schema)]
+
+
+def schema_for_file(
+    schemas: dict[str, dict[str, Any]],
+    mapping: dict[str, str],
+    path: Path,
+    errors: list[str],
+) -> dict[str, Any] | None:
+    schema_name = mapping.get(path.name)
+    if not schema_name:
+        errors.append(f"{path}: 未配置 schema 映射")
+        return None
+    schema = schemas.get(schema_name)
+    if not schema:
+        errors.append(f"{path}: 找不到 schema {schema_name}")
+        return None
+    return schema
+
+
+def validate_jsonl(path: Path, schema: dict[str, Any] | None = None) -> list[str]:
+    errors: list[str] = []
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
             continue
@@ -205,9 +261,8 @@ def validate_jsonl(path: Path, required_fields: set[str] | None = None) -> list[
         except json.JSONDecodeError as exc:
             errors.append(f"{path}:{line_number}: JSONL 无效：{exc}")
             continue
-        missing = sorted(required - set(record))
-        if missing:
-            errors.append(f"{path}:{line_number}: 缺少字段：{', '.join(missing)}")
+        if schema is not None:
+            errors.extend(schema_errors_for_record(record, schema, f"{path}:{line_number}"))
         if path.name == "source-manifest.jsonl":
             forbidden = {"full_text", "content", "standard_text"} & set(record)
             if forbidden:
@@ -254,6 +309,7 @@ def validate_root(root: Path) -> list[str]:
     else:
         errors.append(f"{index_path}: 缺少 skill index")
 
+    schemas: dict[str, dict[str, Any]] = {}
     for schema_path in sorted((root / "schemas").glob("*.schema.json")):
         try:
             schema = load_json(schema_path)
@@ -263,6 +319,8 @@ def validate_root(root: Path) -> list[str]:
         for field in ("$schema", "title", "type"):
             if field not in schema:
                 errors.append(f"{schema_path}: 缺少 schema 字段 {field}")
+        if isinstance(schema, dict):
+            schemas[schema_path.name] = schema
 
     for example_path in sorted((root / "examples").glob("*.json")):
         try:
@@ -270,12 +328,13 @@ def validate_root(root: Path) -> list[str]:
         except json.JSONDecodeError as exc:
             errors.append(f"{example_path}: JSON 无效：{exc}")
             continue
-        missing = sorted(REQUIRED_EXAMPLE_FIELDS.get(example_path.name, set()) - set(example))
-        if missing:
-            errors.append(f"{example_path}: 缺少字段：{', '.join(missing)}")
+        schema = schema_for_file(schemas, SCHEMA_FILE_BY_EXAMPLE, example_path, errors)
+        if schema is not None:
+            errors.extend(schema_errors_for_record(example, schema, str(example_path)))
 
     for example_path in sorted((root / "examples").glob("*.jsonl")):
-        errors.extend(validate_jsonl(example_path))
+        schema = schema_for_file(schemas, SCHEMA_FILE_BY_EXAMPLE, example_path, errors)
+        errors.extend(validate_jsonl(example_path, schema))
 
     demos_dir = root / "demos"
     if demos_dir.exists():
@@ -285,11 +344,12 @@ def validate_root(root: Path) -> list[str]:
             except json.JSONDecodeError as exc:
                 errors.append(f"{demo_json}: JSON 无效：{exc}")
                 continue
-            missing = sorted(REQUIRED_DEMO_FIELDS.get(demo_json.name, set()) - set(demo_record))
-            if missing:
-                errors.append(f"{demo_json}: 缺少字段：{', '.join(missing)}")
+            schema = schema_for_file(schemas, SCHEMA_FILE_BY_DEMO, demo_json, errors)
+            if schema is not None:
+                errors.extend(schema_errors_for_record(demo_record, schema, str(demo_json)))
         for demo_jsonl in sorted(demos_dir.glob("*/*.jsonl")):
-            errors.extend(validate_jsonl(demo_jsonl, REQUIRED_DEMO_FIELDS.get(demo_jsonl.name, set())))
+            schema = schema_for_file(schemas, SCHEMA_FILE_BY_DEMO, demo_jsonl, errors)
+            errors.extend(validate_jsonl(demo_jsonl, schema))
 
     return errors
 
@@ -427,7 +487,7 @@ def build_parser() -> argparse.ArgumentParser:
     show_parser.add_argument("skill", help="Skill 名称。")
     show_parser.set_defaults(func=cmd_show)
 
-    validate_parser = subparsers.add_parser("validate", help="验证 skills 和 examples。")
+    validate_parser = subparsers.add_parser("validate", help="验证 skills、schemas、examples 和 demos。")
     validate_parser.add_argument("--json", action="store_true", help="输出 JSON。")
     validate_parser.set_defaults(func=cmd_validate)
 
@@ -445,7 +505,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_task_parser.add_argument("--actor", default="pi-agent", help="Actor 名称。")
     run_task_parser.add_argument("--run-id", help="可选稳定 run ID。")
     run_task_parser.add_argument("--output", help="Run log 输出路径。默认 runs/<run_id>.json。")
-    run_task_parser.add_argument("--validate", action="store_true", help="先运行仓库 validation。")
+    run_task_parser.add_argument("--validate", action="store_true", help="先运行仓库 schema-aware validation。")
     run_task_parser.set_defaults(func=cmd_run_task)
 
     return parser

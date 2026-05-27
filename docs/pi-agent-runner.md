@@ -5,7 +5,7 @@
 
 1. 读取 task packet；
 2. 按名称选择现有 skill；
-3. 可选运行仓库 validation；
+3. 可选运行仓库 schema-aware validation；
 4. 写 skill run log；
 5. 打印机器可读 summary。
 
@@ -34,6 +34,10 @@ standards-skills run-task \
 ```
 
 ## 设计边界
+
+`--validate` 会调用 `standards-skills validate`，检查 skill metadata，并把
+`examples/` 与 `demos/` 中的 artifact 按对应 JSON Schema 校验。它是轻量本地质量门，
+不是模型评测、法律审查或合规认证。
 
 Runner 必须保持轻量：
 

@@ -65,6 +65,11 @@ PYTHONPATH=src python -m standards_intelligence_skills.cli list
 PYTHONPATH=src python -m standards_intelligence_skills.cli validate
 ```
 
+`standards-skills validate` 会做 schema-aware validation：检查 skill metadata、
+schema 文件基本形态，并把 `examples/` 与 `demos/` 中的 JSON/JSONL artifact 按
+`schemas/*.schema.json` 校验。当前实现覆盖本仓库使用的 JSON Schema 子集：
+`type`、`required`、`properties`、`items`、`enum` 和 `additionalProperties`。
+
 ## PI Agent 使用方式
 
 1. 读取任务，并从 `skills/index.json` 选择一个主要 skill。
