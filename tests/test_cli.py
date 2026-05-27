@@ -105,14 +105,35 @@ class CliTests(unittest.TestCase):
         self.assertTrue(any("answer-packets.synthetic.jsonl:1" in error for error in errors))
         self.assertTrue(any("missing-provision" in error for error in errors))
 
+    def test_validate_root_checks_document_family_refs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            shutil.copytree(ROOT, repo)
+            families_path = repo / "demos" / "gb-vehicle-safety" / "document-families.synthetic.jsonl"
+            lines = families_path.read_text(encoding="utf-8").splitlines()
+            first_family = json.loads(lines[0])
+            first_family["current_document_ids"] = ["missing-document"]
+            first_family["relations"][0]["evidence_source_id"] = "missing-source"
+            lines[0] = json.dumps(first_family, ensure_ascii=False)
+            families_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+            errors = cli.validate_root(repo)
+
+        self.assertTrue(any("document-families.synthetic.jsonl:1" in error for error in errors))
+        self.assertTrue(any("missing-document" in error for error in errors))
+        self.assertTrue(any("missing-source" in error for error in errors))
+
     def test_gb_vehicle_safety_demo_counts(self) -> None:
         demo_root = ROOT / "demos" / "gb-vehicle-safety"
         sources = demo_root.joinpath("source-manifest.jsonl").read_text(encoding="utf-8").splitlines()
+        families = demo_root.joinpath("document-families.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
         provisions = demo_root.joinpath("provisions.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
         answers = demo_root.joinpath("answer-packets.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
         coverage = json.loads(demo_root.joinpath("coverage-report.json").read_text(encoding="utf-8"))
 
         self.assertEqual(len([line for line in sources if line.strip()]), 2)
+        self.assertEqual(len([line for line in families if line.strip()]), 2)
+        self.assertEqual(coverage["document_family_count"], 2)
         self.assertEqual(len([line for line in provisions if line.strip()]), 12)
         self.assertEqual(len([line for line in answers if line.strip()]), 5)
         self.assertFalse(coverage["content_boundary"]["standard_pdf_text_stored"])

@@ -2,6 +2,7 @@
   "demo_id": "gb-vehicle-safety",
   "title": "GB 7258 / GB 1589 车辆安全 workflow demo",
   "source_count": 2,
+  "document_family_count": 2,
   "provision_count": 12,
   "answer_packet_count": 5,
   "source_ids": [
@@ -10,6 +11,7 @@
   ],
   "content_boundary": {
     "official_metadata_records": 2,
+    "synthetic_document_families": 2,
     "synthetic_provisions": 12,
     "synthetic_answer_packets": 5,
     "standard_pdf_text_stored": false,

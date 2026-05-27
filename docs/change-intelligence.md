@@ -22,14 +22,19 @@ Change intelligence 的目标是把来源更新整理成可 review 的 change pa
 
 ## Version Graph 字段
 
-Change packet 应保留：
+Document family artifact 使用 `schemas/document-family.schema.json`，用于在生成
+change packet 前先稳定表达一个文档族的版本关系。它应保留：
 
-- old/new document ID；
-- old/new source ID；
-- 关系类型；
-- old/new status；
-- 已知时记录 old/new effective date；
-- 证据 locator。
+- family ID 和 jurisdiction；
+- 可追溯的 source IDs；
+- 每个版本的 document ID、status、发布日期、实施日期和替代关系；
+- current document IDs；
+- relations，例如 replaces、replaced_by 或 related；
+- evidence source 和 locator；
+- review status 与 unresolved issues。
+
+Change packet 继续用于描述一次具体变化：old/new document ID、old/new source ID、
+关系类型、old/new status、effective date 和 review tasks。
 
 ## Watchlist 字段
 
