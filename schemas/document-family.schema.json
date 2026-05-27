@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/document-family.schema.json",
+  "title": "DocumentFamily",
+  "type": "object",
+  "required": [
+    "family_id",
+    "title",
+    "jurisdiction",
+    "source_ids",
+    "versions",
+    "relations",
+    "current_document_ids",
+    "review_status",
+    "unresolved_issues"
+  ],
+  "properties": {
+    "family_id": {"type": "string"},
+    "title": {"type": "string"},
+    "jurisdiction": {"type": "string"},
+    "source_ids": {"type": "array", "items": {"type": "string"}},
+    "versions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["document_id", "status"],
+        "properties": {
+          "document_id": {"type": "string"},
+          "source_id": {"type": "string"},
+          "status": {
+            "type": "string",
+            "enum": ["current", "draft", "superseded", "withdrawn", "unknown"]
+          },
+          "published_date": {"type": "string"},
+          "effective_date": {"type": "string"},
+          "replaces": {"type": "array", "items": {"type": "string"}},
+          "replaced_by": {"type": "array", "items": {"type": "string"}},
+          "locator": {"type": "object", "additionalProperties": true},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["relation_type", "from_document_id", "to_document_id"],
+        "properties": {
+          "relation_type": {
+            "type": "string",
+            "enum": ["replaces", "replaced_by", "same_version_metadata_refresh", "related", "unknown"]
+          },
+          "from_document_id": {"type": "string"},
+          "to_document_id": {"type": "string"},
+          "evidence_source_id": {"type": "string"},
+          "evidence_locator": {"type": "string"},
+          "confidence": {"type": "string", "enum": ["high", "medium", "low"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "current_document_ids": {"type": "array", "items": {"type": "string"}},
+    "review_status": {
+      "type": "string",
+      "enum": ["draft_demo", "draft", "reviewed", "needs_review"]
+    },
+    "unresolved_issues": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

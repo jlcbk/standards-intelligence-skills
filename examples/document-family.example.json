@@ -1,0 +1,49 @@
+{
+  "family_id": "family-demo-vehicle-safety",
+  "title": "Synthetic 车辆安全标准族",
+  "jurisdiction": "EX",
+  "source_ids": [
+    "src-demo-001"
+  ],
+  "versions": [
+    {
+      "document_id": "doc-demo-vehicle-safety-2026",
+      "source_id": "src-demo-001",
+      "status": "current",
+      "published_date": "2026-05-27",
+      "effective_date": "2026-05-27",
+      "replaces": [
+        "doc-demo-vehicle-safety-2025"
+      ],
+      "locator": {
+        "url": "https://example.invalid/notice"
+      },
+      "notes": "Synthetic 示例，不是真实法规。"
+    },
+    {
+      "document_id": "doc-demo-vehicle-safety-2025",
+      "status": "superseded",
+      "replaced_by": [
+        "doc-demo-vehicle-safety-2026"
+      ],
+      "notes": "仅用于展示 version graph 形态。"
+    }
+  ],
+  "relations": [
+    {
+      "relation_type": "replaces",
+      "from_document_id": "doc-demo-vehicle-safety-2026",
+      "to_document_id": "doc-demo-vehicle-safety-2025",
+      "evidence_source_id": "src-demo-001",
+      "evidence_locator": "source-manifest.replaces",
+      "confidence": "medium"
+    }
+  ],
+  "current_document_ids": [
+    "doc-demo-vehicle-safety-2026"
+  ],
+  "review_status": "draft_demo",
+  "unresolved_issues": [
+    "真实使用前需要来源 metadata review。"
+  ]
+}

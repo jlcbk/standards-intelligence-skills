@@ -20,7 +20,7 @@
   {
     "name": "change-impact",
     "path": "skills/change-impact/SKILL.md",
-    "primary_outputs": ["change_packet"],
+    "primary_outputs": ["document_family", "change_packet"],
     "summary": "分析来源或版本变化，并生成 impact packets。"
   },
   {

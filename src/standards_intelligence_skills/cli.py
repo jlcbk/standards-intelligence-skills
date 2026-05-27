@@ -21,6 +21,7 @@ SCHEMA_FILE_BY_EXAMPLE = {
     "answer-packet.example.json": "answer-packet.schema.json",
     "change-packet.example.json": "change-packet.schema.json",
     "compliance-checklist.example.json": "compliance-checklist.schema.json",
+    "document-family.example.json": "document-family.schema.json",
     "provision.example.json": "provision.schema.json",
     "skill-run-log.example.json": "skill-run-log.schema.json",
     "source-manifest.example.jsonl": "source-manifest.schema.json",
@@ -30,6 +31,7 @@ SCHEMA_FILE_BY_EXAMPLE = {
 SCHEMA_FILE_BY_DEMO = {
     "answer-packets.synthetic.jsonl": "answer-packet.schema.json",
     "coverage-report.json": "coverage-report.schema.json",
+    "document-families.synthetic.jsonl": "document-family.schema.json",
     "provisions.synthetic.jsonl": "provision.schema.json",
     "source-manifest.jsonl": "source-manifest.schema.json",
 }
@@ -329,6 +331,60 @@ def validate_citation_refs(
     return errors
 
 
+def validate_document_family_refs(
+    *,
+    label: str,
+    family: dict[str, Any],
+    source_ids: set[str],
+) -> list[str]:
+    errors: list[str] = []
+    family_source_ids = family.get("source_ids", [])
+    if isinstance(family_source_ids, list):
+        for source_id in family_source_ids:
+            if isinstance(source_id, str) and source_id not in source_ids:
+                errors.append(f"{label}: source_ids 不存在于 source manifest：{source_id}")
+
+    versions = family.get("versions", [])
+    version_ids: set[str] = set()
+    if isinstance(versions, list):
+        for index, version in enumerate(versions):
+            if not isinstance(version, dict):
+                continue
+            document_id = version.get("document_id")
+            if isinstance(document_id, str):
+                version_ids.add(document_id)
+            source_id = version.get("source_id")
+            if isinstance(source_id, str):
+                if source_id not in source_ids:
+                    errors.append(f"{label}.versions[{index}]: source_id 不存在于 source manifest：{source_id}")
+                if isinstance(family_source_ids, list) and source_id not in family_source_ids:
+                    errors.append(f"{label}.versions[{index}]: source_id 未列入 family source_ids：{source_id}")
+
+    current_document_ids = family.get("current_document_ids", [])
+    if isinstance(current_document_ids, list):
+        for document_id in current_document_ids:
+            if isinstance(document_id, str) and document_id not in version_ids:
+                errors.append(f"{label}: current_document_ids 不存在于 versions：{document_id}")
+
+    relations = family.get("relations", [])
+    if isinstance(relations, list):
+        for index, relation in enumerate(relations):
+            if not isinstance(relation, dict):
+                continue
+            for field in ("from_document_id", "to_document_id"):
+                document_id = relation.get(field)
+                if isinstance(document_id, str) and document_id not in version_ids:
+                    errors.append(f"{label}.relations[{index}]: {field} 不存在于 versions：{document_id}")
+            evidence_source_id = relation.get("evidence_source_id")
+            if isinstance(evidence_source_id, str) and evidence_source_id not in source_ids:
+                errors.append(
+                    f"{label}.relations[{index}]: evidence_source_id 不存在于 source manifest："
+                    f"{evidence_source_id}"
+                )
+
+    return errors
+
+
 def validate_demo_integrity(demo_root: Path) -> list[str]:
     errors: list[str] = []
     source_records, source_errors = read_jsonl_objects(demo_root / "source-manifest.jsonl")
@@ -366,6 +422,14 @@ def validate_demo_integrity(demo_root: Path) -> list[str]:
             )
         )
 
+    family_records: list[tuple[str, dict[str, Any]]] = []
+    family_path = demo_root / "document-families.synthetic.jsonl"
+    if family_path.exists():
+        family_records, family_errors = read_jsonl_objects(family_path)
+        errors.extend(family_errors)
+        for label, record in family_records:
+            errors.extend(validate_document_family_refs(label=label, family=record, source_ids=source_ids))
+
     coverage_path = demo_root / "coverage-report.json"
     try:
         coverage = load_json(coverage_path)
@@ -379,6 +443,8 @@ def validate_demo_integrity(demo_root: Path) -> list[str]:
             "provision_count": len(provision_records),
             "answer_packet_count": len(answer_records),
         }
+        if family_records or (isinstance(coverage, dict) and "document_family_count" in coverage):
+            expected_counts["document_family_count"] = len(family_records)
         for field, expected in expected_counts.items():
             actual = coverage.get(field) if isinstance(coverage, dict) else None
             if actual != expected:
