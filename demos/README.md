@@ -1,10 +1,10 @@
 # Demos
 
-Demo packages show complete workflows while preserving source access boundaries.
+Demo packages 用来展示完整 workflow，同时保留安全的来源边界。
 
-Current demo:
+当前 demo：
 
-- `gb-vehicle-safety`: source metadata for GB 7258-2017 and GB 1589-2016,
-  synthetic provisions, synthetic answer packets, and a coverage report.
+- `gb-vehicle-safety`：GB 7258-2017 和 GB 1589-2016 的 source metadata、
+  synthetic provisions、synthetic answer packets 和 coverage report。
 
-Demo packages must not store restricted standards text or PDF content.
+Demo packages 不得保存受限标准正文或 PDF 内容。

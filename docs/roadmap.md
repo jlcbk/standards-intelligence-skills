@@ -1,32 +1,32 @@
-# Roadmap
+# 路线图
 
-## P0: Usable Skill Pack
+## P0：可用的 Skill Pack
 
-- Define core skills and schemas.
-- Add CLI validation and examples.
-- Publish the initial public repository.
-- Keep all examples synthetic or safe to redistribute.
+- 定义核心 skills 和 schemas。
+- 增加 CLI validation 和 examples。
+- 发布初始公开仓库。
+- 所有公开示例都使用 synthetic 或可安全再分发内容。
 
-## P1: First Vertical Demo
+## P1：第一个垂直 Demo
 
-- Pick one narrow domain, such as vehicle safety or battery safety.
-- Register 3 to 5 source records with clear access boundaries.
-- Compile 10 to 20 reviewed sample provisions.
-- Produce 5 answer packets and 1 coverage report.
+- 选择一个窄领域，例如车辆安全或电池安全。
+- 登记 3 到 5 条安全来源记录。
+- 编译 10 到 20 条 reviewed sample provisions。
+- 产出 5 个 answer packets 和 1 个 coverage report。
 
-## P2: Change Intelligence
+## P2：变更情报
 
-- Add document family and version graph schemas.
-- Add watchlist records and stale-source detection.
-- Generate change impact packets.
+- 增加 document family 和 version graph schema。
+- 增加 watchlist 记录和 stale-source detection。
+- 生成 change impact packets。
 
-## P3: Compliance Workflow
+## P3：合规工作流
 
-- Map requirements to controls, evidence, owner, status, and due dates.
-- Generate checklist artifacts and exportable packets.
+- 映射 requirement 到 control、evidence、owner、status 和 due date。
+- 生成 checklist artifacts 和可导出的 evidence packets。
 
-## P4: PI-Agent Automation
+## P4：PI-Agent 自动化
 
-- Add a repeatable task runner.
-- Let the PI agent select skills, generate artifacts, validate, and log runs.
-- Add issue templates for iteration and review.
+- 增加可重复运行的 task runner。
+- 让 PI agent 能选择 skill、生成 artifact、验证并记录 run log。
+- 增加后续 issue/review 模板。

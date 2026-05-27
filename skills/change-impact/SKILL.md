@@ -1,35 +1,33 @@
 ---
 name: change-impact
-description: Analyze changes across standards, regulations, policy notices, and document versions. Use when PI agent needs to detect source changes, compare versions, identify affected provisions/topics/entities, or prepare a change impact packet for review.
+description: 分析标准、法规、政策通知和文档版本之间的变化。用于 PI agent 需要检测来源变化、比较版本、识别受影响 provisions/topics/entities，或准备 change impact packet 的场景。
 ---
 
 # Change Impact
 
-Use this skill when a source, version, or document family has changed.
+当 source、version 或 document family 发生变化时，使用这个 skill。
 
 ## Workflow
 
-1. Confirm old and new source manifest records.
-2. Compare document metadata first: issuer, status, publication date, effective
-   date, replacement relation, and official locator.
-3. Compare provisions by stable locator before using semantic similarity.
-4. Classify changes as added, removed, modified, renumbered, clarified, or
-   unknown.
-5. Identify affected topics, entities, controls, evidence, and answer packets.
-6. Produce review tasks for high-risk or low-confidence changes.
+1. 确认 old/new source manifest records。
+2. 先比较 document metadata：issuer、status、publication date、effective date、
+   replacement relation 和 official locator。
+3. 如果有授权文本，先按稳定 locator 比较 provisions，再考虑 semantic similarity。
+4. 将变化分类为 added、removed、modified、renumbered、clarified 或 unknown。
+5. 识别受影响 topics、entities、controls、evidence 和 answer packets。
+6. 为高风险或低置信度变化生成 review tasks。
 
 ## Quality Gate
 
-- Do not mark a change as substantive without evidence.
-- Preserve both old and new citations.
-- Escalate replacement and effective-date uncertainty.
-- Generate review tasks when affected compliance evidence exists.
+- 没有证据时，不要把变化标记为 substantive。
+- 保留 old/new citations。
+- 遇到 replacement 和 effective-date 不确定性要升级。
+- 如果影响 compliance evidence，要生成 review tasks。
 
 ## Output
 
-Use `schemas/change-packet.schema.json`.
+使用 `schemas/change-packet.schema.json`。
 
-For metadata-only public demos, change packets may describe source status,
-replacement relation, retrieval, or watchlist changes without quoting standard
-text. For private/BYOD runs, change packets may also include provision-level
-diff summaries when the input source license permits that processing.
+公开 metadata-only demo 可以描述 source status、replacement relation、retrieval
+或 watchlist 变化，但不要引用标准正文。私有 BYOD 运行可以在授权允许时包含
+provision-level diff summaries。

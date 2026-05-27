@@ -1,7 +1,7 @@
 {
   "answer_id": "ans-demo-001",
-  "question": "Does the demonstration vehicle record need an inspection date?",
-  "short_answer": "Yes, for this synthetic example the record should include an inspection date.",
+  "question": "演示车辆记录是否需要包含检查日期？",
+  "short_answer": "需要。这个 synthetic 示例要求记录包含检查日期。",
   "scope": {
     "jurisdiction": "EX",
     "document_id": "doc-demo-vehicle-safety",

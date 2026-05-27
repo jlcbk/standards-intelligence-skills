@@ -1,7 +1,7 @@
 {
   "run_id": "run-demo-001",
   "skill_name": "regulatory-answer",
-  "task": "Answer a synthetic inspection date question.",
+  "task": "回答一个 synthetic 检查日期问题。",
   "actor": "pi-agent",
   "started_at": "2026-05-27T00:00:00Z",
   "finished_at": "2026-05-27T00:01:00Z",
@@ -10,7 +10,7 @@
   "validation": {
     "command": "standards-skills validate",
     "passed": true,
-    "notes": "Synthetic example validated."
+    "notes": "Synthetic 示例已通过验证。"
   },
   "skill_updates_needed": []
 }

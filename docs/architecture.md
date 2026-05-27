@@ -1,44 +1,41 @@
-# Architecture
+# 架构
 
-This repo keeps the agent small and moves repeatable domain work into durable
-assets.
+本仓库把 agent 做薄，把可复用能力沉淀到稳定资产中。
 
-## Layers
+## 分层
 
-1. **PI-agent harness**
-   - Accept a task.
-   - Select and load a skill.
-   - Execute tools or scripts.
-   - Persist artifacts and a run log.
+1. **PI-agent 调度层**
+   - 接收任务。
+   - 选择并加载 skill。
+   - 调用工具或脚本。
+   - 保存 artifact 和 run log。
 
 2. **Skills**
-   - Describe one reusable workflow.
-   - Include trigger conditions, inputs, outputs, guardrails, and quality gates.
-   - Avoid embedding large reference corpora in the prompt.
+   - 描述一个可复用 workflow。
+   - 包含触发条件、输入、输出、边界和质量门。
+   - 不把大量参考资料塞进 prompt。
 
 3. **Schemas**
-   - Define the durable outputs that later agents and tools can trust.
-   - Keep outputs diffable, reviewable, and CI-checkable.
+   - 定义后续 agent 和工具可以信任的持久化产物。
+   - 让输出可 diff、可 review、可被 CI 检查。
 
 4. **Examples**
-   - Provide minimal synthetic fixtures.
-   - Never contain restricted standards text.
+   - 提供最小 synthetic fixture。
+   - 不包含受限标准正文。
 
 5. **Validation**
-   - Check skill metadata and JSON artifacts.
-   - Prevent silent drift in artifact contracts.
+   - 检查 skill metadata 和 JSON/JSONL artifacts。
+   - 防止产物契约悄悄漂移。
 
-## Why Not a Heavy Agent
+## 为什么不做重 Agent
 
-`standards-llm-wiki` showed that the domain needs provenance, version safety,
-clause-level modeling, and evaluation. Those are durable capabilities, not a
-reason to run a large autonomous agent all the time.
+`standards-llm-wiki` 证明了这个领域需要 provenance、版本安全、条款级建模和 eval。
+这些应该是长期资产，而不是塞进一个常驻大 agent 的临时上下文里。
 
-The intended model is:
+目标运行模型是：
 
 ```text
 task -> PI agent -> skill -> code/schema/data -> validated artifact -> run log
 ```
 
-The PI agent can remain interchangeable as long as it follows the contract in
-`docs/pi-agent-contract.md`.
+只要遵守 `docs/pi-agent-contract.md`，PI agent 本身可以替换。

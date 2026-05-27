@@ -1,32 +1,29 @@
 ---
 name: provision-compiler
-description: Compile standards, regulations, and policy documents into clause-level provisions with citations, locators, review status, and version metadata. Use when PI agent needs to transform source text into structured provisions, split clauses, preserve numbering, or prepare reviewed knowledge artifacts.
+description: 将标准、法规和政策文档编译成条款级 provisions，并保留 citations、locators、review status 和 version metadata。用于 PI agent 需要把 source text 转成结构化 provisions、拆分条款、保留编号，或准备 reviewed knowledge artifacts 的场景。
 ---
 
 # Provision Compiler
 
-Use this skill after source intake is complete and the agent is allowed to
-process the source content.
+完成 source intake，并确认允许处理 source content 后，使用这个 skill。
 
 ## Workflow
 
-1. Confirm the source manifest permits the intended processing.
-2. Preserve document hierarchy: part, chapter, section, clause, annex, table,
-   figure, and note.
-3. Split by logical provisions, not arbitrary token chunks.
-4. Assign stable IDs using document family and clause locator when possible.
-5. Keep `review_status` as `candidate` unless a human or approved review step has
-   checked the output.
-6. Record source locator, version status, effective date, and extraction notes.
-7. Emit records matching `schemas/provision.schema.json`.
+1. 确认 source manifest 允许当前处理方式。
+2. 保留文档层级：part、chapter、section、clause、annex、table、figure、note。
+3. 按逻辑 provision 拆分，不按任意 token chunk 拆分。
+4. 尽可能用 document family 和 clause locator 分配稳定 ID。
+5. 除非经过人类或批准的 review step，否则 `review_status` 保持 `candidate`。
+6. 记录 source locator、version status、effective date 和 extraction notes。
+7. 产出符合 `schemas/provision.schema.json` 的 records。
 
 ## Quality Gate
 
-- Each provision has a source ID and locator.
-- Each normative statement keeps conditions and exceptions near the statement.
-- Tables and annexes are marked when extraction confidence is low.
-- Candidate provisions are not mixed with reviewed provisions in final answers.
+- 每条 provision 都有 source ID 和 locator。
+- 条件和例外必须靠近对应规范性表述。
+- 表格和附录如果抽取置信度低，必须标记。
+- Candidate provisions 不得混入 final answers，除非显式允许。
 
 ## Output
 
-Use `schemas/provision.schema.json`.
+使用 `schemas/provision.schema.json`。

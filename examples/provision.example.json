@@ -4,11 +4,11 @@
   "document_id": "doc-demo-vehicle-safety",
   "locator": "section 1.1",
   "heading_path": ["Synthetic requirements", "Safety notice"],
-  "text": "A demonstration vehicle record should include an inspection date.",
+  "text": "演示车辆记录应包含检查日期。",
   "review_status": "reviewed",
   "version_status": "current",
   "effective_date": "2026-01-01",
   "topics": ["inspection-records"],
   "entities": ["demonstration-vehicle"],
-  "extraction_notes": "Synthetic example for schema validation."
+  "extraction_notes": "用于 schema validation 的 synthetic 示例。"
 }

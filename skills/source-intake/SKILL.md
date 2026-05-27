@@ -1,35 +1,33 @@
 ---
 name: source-intake
-description: Register standards, regulations, policy notices, and private documents for standards intelligence workflows. Use when PI agent needs to add or review a source, decide public/private handling, record provenance, hash/locator metadata, or prepare a source manifest before compiling clauses.
+description: 登记标准、法规、政策通知和私有文档来源。用于 PI agent 需要新增或 review 来源、判断公开/私有处理边界、记录 provenance、hash/locator metadata，或在条款编译前准备 source manifest 的场景。
 ---
 
 # Source Intake
 
-Use this skill to create safe, traceable source records before any extraction or
-question answering happens.
+使用这个 skill，在任何抽取或问答发生前先创建安全、可追溯的 source record。
 
 ## Workflow
 
-1. Identify the source owner, issuer, jurisdiction, document type, title,
-   publication date, effective date, and official locator.
-2. Classify access with `docs/source-access-policy.md`.
-3. Assign a stable `source_id`.
-4. Record retrieval metadata: URL/path, retrieved time, hash if available, byte
-   size if available, and extractor notes.
-5. Set `redistribution_policy` before storing any content.
-6. Emit records matching `schemas/source-manifest.schema.json`.
-7. If access is unknown or restricted, store metadata only in public artifacts.
+1. 识别来源 owner、issuer、jurisdiction、document type、title、publication date、
+   effective date 和 official locator。
+2. 按 `docs/source-access-policy.md` 分类访问权限。
+3. 分配稳定的 `source_id`。
+4. 记录 retrieval metadata：URL/path、retrieved time、hash、byte size 和 extractor notes。
+5. 在存储任何内容前确定 `redistribution_policy`。
+6. 产出符合 `schemas/source-manifest.schema.json` 的 records。
+7. 如果访问状态 unknown 或 restricted，公开 artifacts 只保存 metadata。
 
 ## Quality Gate
 
-- Every source has an issuer and locator.
-- Every source has `access_level` and `redistribution_policy`.
-- Restricted sources do not place full text in public paths.
-- The run log records who made the access decision and why.
+- 每个 source 都有 issuer 和 locator。
+- 每个 source 都有 `access_level` 和 `redistribution_policy`。
+- Restricted sources 不把全文放到公开路径。
+- Run log 记录谁做了访问决策以及原因。
 
 ## Output
 
-Write JSONL records shaped like:
+输出 JSONL records，例如：
 
 ```json
 {
