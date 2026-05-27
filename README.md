@@ -58,6 +58,7 @@ python3.10 -m venv .venv
 pip install -e .
 standards-skills list
 standards-skills validate
+standards-skills run-task --packet examples/task-packet.example.json --validate
 python -m unittest discover -s tests
 ```
 
@@ -78,6 +79,7 @@ PYTHONPATH=src python -m standards_intelligence_skills.cli validate
 6. If the task succeeded, consider whether the skill itself should be improved.
 
 See [docs/pi-agent-contract.md](docs/pi-agent-contract.md).
+See [docs/pi-agent-runner.md](docs/pi-agent-runner.md) for the minimal runner.
 
 ## Demo Packages
 
