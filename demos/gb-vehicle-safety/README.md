@@ -3,7 +3,7 @@
 这个 demo 用来跑通第一条垂直 workflow：
 
 ```text
-source-intake -> document-family -> provision-compiler -> regulatory-answer -> coverage report
+source-intake -> document-family -> source-watchlist -> provision-compiler -> regulatory-answer -> coverage report
 ```
 
 Demo 使用两条官方 source metadata：
@@ -27,6 +27,7 @@ Demo 使用两条官方 source metadata：
 - 测试 skill selection；
 - 测试 JSON/JSONL artifact validation；
 - 演示 metadata-level document family / version graph；
+- 演示 source watchlist 到期检查；
 - 演示 citation-shaped answer packets；
 - 证明公开 metadata 和私有/BYOD 全文处理可以安全共存。
 

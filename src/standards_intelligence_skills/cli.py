@@ -25,6 +25,7 @@ SCHEMA_FILE_BY_EXAMPLE = {
     "provision.example.json": "provision.schema.json",
     "skill-run-log.example.json": "skill-run-log.schema.json",
     "source-manifest.example.jsonl": "source-manifest.schema.json",
+    "source-watchlist.example.json": "source-watchlist.schema.json",
     "task-packet.example.json": "task-packet.schema.json",
 }
 
@@ -34,6 +35,7 @@ SCHEMA_FILE_BY_DEMO = {
     "document-families.synthetic.jsonl": "document-family.schema.json",
     "provisions.synthetic.jsonl": "provision.schema.json",
     "source-manifest.jsonl": "source-manifest.schema.json",
+    "source-watchlist.synthetic.jsonl": "source-watchlist.schema.json",
 }
 
 
@@ -385,6 +387,18 @@ def validate_document_family_refs(
     return errors
 
 
+def validate_watchlist_refs(
+    *,
+    label: str,
+    watch: dict[str, Any],
+    source_ids: set[str],
+) -> list[str]:
+    source_id = watch.get("source_id")
+    if isinstance(source_id, str) and source_id not in source_ids:
+        return [f"{label}: source_id 不存在于 source manifest：{source_id}"]
+    return []
+
+
 def validate_demo_integrity(demo_root: Path) -> list[str]:
     errors: list[str] = []
     source_records, source_errors = read_jsonl_objects(demo_root / "source-manifest.jsonl")
@@ -430,6 +444,14 @@ def validate_demo_integrity(demo_root: Path) -> list[str]:
         for label, record in family_records:
             errors.extend(validate_document_family_refs(label=label, family=record, source_ids=source_ids))
 
+    watchlist_records: list[tuple[str, dict[str, Any]]] = []
+    watchlist_path = demo_root / "source-watchlist.synthetic.jsonl"
+    if watchlist_path.exists():
+        watchlist_records, watchlist_errors = read_jsonl_objects(watchlist_path)
+        errors.extend(watchlist_errors)
+        for label, record in watchlist_records:
+            errors.extend(validate_watchlist_refs(label=label, watch=record, source_ids=source_ids))
+
     coverage_path = demo_root / "coverage-report.json"
     try:
         coverage = load_json(coverage_path)
@@ -445,6 +467,8 @@ def validate_demo_integrity(demo_root: Path) -> list[str]:
         }
         if family_records or (isinstance(coverage, dict) and "document_family_count" in coverage):
             expected_counts["document_family_count"] = len(family_records)
+        if watchlist_records or (isinstance(coverage, dict) and "watchlist_count" in coverage):
+            expected_counts["watchlist_count"] = len(watchlist_records)
         for field, expected in expected_counts.items():
             actual = coverage.get(field) if isinstance(coverage, dict) else None
             if actual != expected:
@@ -489,6 +513,75 @@ def validate_demo_integrity(demo_root: Path) -> list[str]:
                         )
 
     return errors
+
+
+def parse_timestamp(value: str) -> datetime:
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    parsed = datetime.fromisoformat(text)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def collect_watchlist_records(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    records: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for path in sorted((root / "demos").glob("*/source-watchlist.synthetic.jsonl")):
+        watchlist_records, watchlist_errors = read_jsonl_objects(path)
+        errors.extend(watchlist_errors)
+        for label, record in watchlist_records:
+            records.append(
+                {
+                    "label": label,
+                    "demo_id": path.parent.name,
+                    "record": record,
+                }
+            )
+    return records, errors
+
+
+def check_source_watchlists(root: Path, as_of: datetime) -> dict[str, Any]:
+    records, errors = collect_watchlist_records(root)
+    items: list[dict[str, Any]] = []
+    due_count = 0
+
+    for item in records:
+        record = item["record"]
+        label = item["label"]
+        next_due_at = record.get("next_due_at")
+        if not isinstance(next_due_at, str):
+            errors.append(f"{label}: next_due_at 必须是 string")
+            continue
+        try:
+            due_at = parse_timestamp(next_due_at)
+        except ValueError as exc:
+            errors.append(f"{label}: next_due_at 无效：{exc}")
+            continue
+
+        state = "due" if due_at <= as_of else "ok"
+        if state == "due":
+            due_count += 1
+        items.append(
+            {
+                "demo_id": item["demo_id"],
+                "watch_id": record.get("watch_id"),
+                "source_id": record.get("source_id"),
+                "next_due_at": next_due_at,
+                "state": state,
+                "action": record.get("action"),
+                "review_status": record.get("review_status"),
+            }
+        )
+
+    return {
+        "ok": not errors and due_count == 0,
+        "as_of": as_of.isoformat().replace("+00:00", "Z"),
+        "due_count": due_count,
+        "items": items,
+        "errors": errors,
+    }
 
 
 def validate_root(root: Path) -> list[str]:
@@ -619,6 +712,37 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 1 if errors else 0
 
 
+def cmd_check_sources(args: argparse.Namespace) -> int:
+    root = repo_root_from(Path(args.root) if args.root else None)
+    try:
+        as_of = parse_timestamp(args.as_of) if args.as_of else datetime.now(timezone.utc).replace(microsecond=0)
+    except ValueError as exc:
+        print(f"--as-of 无效：{exc}", file=sys.stderr)
+        return 2
+
+    report = check_source_watchlists(root, as_of)
+    if args.json:
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+    else:
+        if report["errors"]:
+            print("source watchlist 检查失败：", file=sys.stderr)
+            for error in report["errors"]:
+                print(f"- {error}", file=sys.stderr)
+        elif report["due_count"]:
+            print(f"发现 {report['due_count']} 条到期 source watchlist：")
+            for item in report["items"]:
+                if item["state"] == "due":
+                    print(f"- {item['source_id']} ({item['watch_id']}), next_due_at={item['next_due_at']}")
+        else:
+            print("source watchlist 未到期。")
+
+    if report["errors"]:
+        return 1
+    if args.fail_on_due and report["due_count"]:
+        return 1
+    return 0
+
+
 def cmd_new_run_log(args: argparse.Namespace) -> int:
     payload = build_run_log(skill_name=args.skill, task=args.task, actor=args.actor, run_id=args.run_id)
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
@@ -710,6 +834,12 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser = subparsers.add_parser("validate", help="验证 skills、schemas、examples 和 demos。")
     validate_parser.add_argument("--json", action="store_true", help="输出 JSON。")
     validate_parser.set_defaults(func=cmd_validate)
+
+    check_sources_parser = subparsers.add_parser("check-sources", help="检查 source watchlist 是否到期。")
+    check_sources_parser.add_argument("--as-of", help="检查日期/时间，例如 2026-06-27 或 ISO timestamp。")
+    check_sources_parser.add_argument("--fail-on-due", action="store_true", help="存在到期 watchlist 时返回失败。")
+    check_sources_parser.add_argument("--json", action="store_true", help="输出 JSON。")
+    check_sources_parser.set_defaults(func=cmd_check_sources)
 
     run_log_parser = subparsers.add_parser("new-run-log", help="创建 run log 模板。")
     run_log_parser.add_argument("--skill", required=True, help="Skill 名称。")

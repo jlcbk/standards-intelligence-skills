@@ -38,7 +38,7 @@ Change packet 继续用于描述一次具体变化：old/new document ID、old/n
 
 ## Watchlist 字段
 
-后续 watchlist record 建议包含：
+Source watchlist 使用 `schemas/source-watchlist.schema.json`。每条 record 包含：
 
 - source ID；
 - 官方 URL；
@@ -47,3 +47,12 @@ Change packet 继续用于描述一次具体变化：old/new document ID、old/n
 - last seen status；
 - last seen hash 或 metadata fingerprint；
 - next review task。
+
+本地命令：
+
+```bash
+standards-skills check-sources --as-of 2026-06-27
+standards-skills check-sources --as-of 2026-06-27 --fail-on-due
+```
+
+默认只报告到期项；`--fail-on-due` 适合放进 CI 或发布前检查。

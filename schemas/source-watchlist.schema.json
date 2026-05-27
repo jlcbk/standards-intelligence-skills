@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/source-watchlist.schema.json",
+  "title": "SourceWatchlistRecord",
+  "type": "object",
+  "required": [
+    "watch_id",
+    "source_id",
+    "official_locator",
+    "cadence_days",
+    "last_checked_at",
+    "next_due_at",
+    "last_seen_status",
+    "review_status",
+    "action",
+    "unresolved_issues"
+  ],
+  "properties": {
+    "watch_id": {"type": "string"},
+    "source_id": {"type": "string"},
+    "official_locator": {"type": "object", "additionalProperties": true},
+    "cadence_days": {"type": "integer"},
+    "last_checked_at": {"type": "string"},
+    "next_due_at": {"type": "string"},
+    "last_seen_status": {"type": "string"},
+    "last_seen_metadata_fingerprint": {"type": "string"},
+    "review_status": {
+      "type": "string",
+      "enum": ["ok", "due", "stale", "blocked", "unknown"]
+    },
+    "action": {
+      "type": "string",
+      "enum": ["monitor", "refresh_metadata", "human_review", "ignore"]
+    },
+    "next_review_task": {
+      "type": "object",
+      "required": ["task_id", "title", "reason"],
+      "properties": {
+        "task_id": {"type": "string"},
+        "title": {"type": "string"},
+        "reason": {"type": "string"},
+        "due_at": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "unresolved_issues": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

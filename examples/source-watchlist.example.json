@@ -1,0 +1,23 @@
+{
+  "watch_id": "watch-demo-001",
+  "source_id": "src-demo-001",
+  "official_locator": {
+    "url": "https://example.invalid/notice"
+  },
+  "cadence_days": 30,
+  "last_checked_at": "2026-05-27T00:00:00Z",
+  "next_due_at": "2026-06-26T00:00:00Z",
+  "last_seen_status": "current",
+  "last_seen_metadata_fingerprint": "synthetic-demo-current-2026-05-27",
+  "review_status": "ok",
+  "action": "monitor",
+  "next_review_task": {
+    "task_id": "review-demo-source-001",
+    "title": "复核 synthetic demo source metadata",
+    "reason": "演示 watchlist 到期判断。",
+    "due_at": "2026-06-26T00:00:00Z"
+  },
+  "unresolved_issues": [
+    "真实来源需要记录可复核的 metadata fingerprint。"
+  ]
+}
