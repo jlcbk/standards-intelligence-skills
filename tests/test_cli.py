@@ -123,10 +123,67 @@ class CliTests(unittest.TestCase):
         self.assertTrue(any("missing-document" in error for error in errors))
         self.assertTrue(any("missing-source" in error for error in errors))
 
+    def test_validate_root_checks_watchlist_refs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            shutil.copytree(ROOT, repo)
+            watchlist_path = repo / "demos" / "gb-vehicle-safety" / "source-watchlist.synthetic.jsonl"
+            lines = watchlist_path.read_text(encoding="utf-8").splitlines()
+            first_watch = json.loads(lines[0])
+            first_watch["source_id"] = "missing-source"
+            lines[0] = json.dumps(first_watch, ensure_ascii=False)
+            watchlist_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+            errors = cli.validate_root(repo)
+
+        self.assertTrue(any("source-watchlist.synthetic.jsonl:1" in error for error in errors))
+        self.assertTrue(any("missing-source" in error for error in errors))
+
+    def test_check_sources_reports_due_items(self) -> None:
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = cli.main(
+                [
+                    "--root",
+                    str(ROOT),
+                    "check-sources",
+                    "--as-of",
+                    "2026-06-27",
+                    "--fail-on-due",
+                    "--json",
+                ]
+            )
+
+        payload = json.loads(out.getvalue())
+        self.assertEqual(code, 1)
+        self.assertEqual(payload["due_count"], 2)
+        self.assertEqual({item["state"] for item in payload["items"]}, {"due"})
+
+    def test_check_sources_passes_before_due_date(self) -> None:
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = cli.main(
+                [
+                    "--root",
+                    str(ROOT),
+                    "check-sources",
+                    "--as-of",
+                    "2026-05-27",
+                    "--fail-on-due",
+                    "--json",
+                ]
+            )
+
+        payload = json.loads(out.getvalue())
+        self.assertEqual(code, 0)
+        self.assertEqual(payload["due_count"], 0)
+        self.assertEqual({item["state"] for item in payload["items"]}, {"ok"})
+
     def test_gb_vehicle_safety_demo_counts(self) -> None:
         demo_root = ROOT / "demos" / "gb-vehicle-safety"
         sources = demo_root.joinpath("source-manifest.jsonl").read_text(encoding="utf-8").splitlines()
         families = demo_root.joinpath("document-families.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
+        watchlist = demo_root.joinpath("source-watchlist.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
         provisions = demo_root.joinpath("provisions.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
         answers = demo_root.joinpath("answer-packets.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
         coverage = json.loads(demo_root.joinpath("coverage-report.json").read_text(encoding="utf-8"))
@@ -134,6 +191,8 @@ class CliTests(unittest.TestCase):
         self.assertEqual(len([line for line in sources if line.strip()]), 2)
         self.assertEqual(len([line for line in families if line.strip()]), 2)
         self.assertEqual(coverage["document_family_count"], 2)
+        self.assertEqual(len([line for line in watchlist if line.strip()]), 2)
+        self.assertEqual(coverage["watchlist_count"], 2)
         self.assertEqual(len([line for line in provisions if line.strip()]), 12)
         self.assertEqual(len([line for line in answers if line.strip()]), 5)
         self.assertFalse(coverage["content_boundary"]["standard_pdf_text_stored"])

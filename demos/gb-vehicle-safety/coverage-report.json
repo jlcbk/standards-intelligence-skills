@@ -3,6 +3,7 @@
   "title": "GB 7258 / GB 1589 车辆安全 workflow demo",
   "source_count": 2,
   "document_family_count": 2,
+  "watchlist_count": 2,
   "provision_count": 12,
   "answer_packet_count": 5,
   "source_ids": [
@@ -12,6 +13,7 @@
   "content_boundary": {
     "official_metadata_records": 2,
     "synthetic_document_families": 2,
+    "synthetic_watchlist_records": 2,
     "synthetic_provisions": 12,
     "synthetic_answer_packets": 5,
     "standard_pdf_text_stored": false,
@@ -37,6 +39,7 @@
   "validation": {
     "commands": [
       "standards-skills validate",
+      "standards-skills check-sources --as-of 2026-05-27",
       "python -m unittest discover -s tests"
     ],
     "expected_result": "pass"

@@ -40,6 +40,14 @@ standards-skills run-task \
 coverage count 和 citation/source/provision 引用一致性。它是轻量本地质量门，不是模型评测、
 法律审查或合规认证。
 
+如果任务依赖来源新鲜度，先运行：
+
+```bash
+standards-skills check-sources --as-of 2026-06-27
+```
+
+这只检查 watchlist 到期状态，不会自动抓取外部网站。
+
 Runner 必须保持轻量：
 
 - 不集成模型 provider；
