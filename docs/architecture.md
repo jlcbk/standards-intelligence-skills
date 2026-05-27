@@ -24,7 +24,8 @@
    - 不包含受限标准正文。
 
 5. **Validation**
-   - 检查 skill metadata 和 JSON/JSONL artifacts。
+   - 检查 skill metadata、schema 文件和 JSON/JSONL artifacts。
+   - 按 `schemas/*.schema.json` 对 examples/demos 做 schema-aware validation。
    - 防止产物契约悄悄漂移。
 
 ## 为什么不做重 Agent

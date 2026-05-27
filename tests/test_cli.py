@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import shutil
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -30,6 +31,49 @@ class CliTests(unittest.TestCase):
 
     def test_validate_root(self) -> None:
         self.assertEqual(cli.validate_root(ROOT), [])
+
+    def test_validate_root_uses_schema_contracts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            shutil.copytree(ROOT, repo)
+            example_path = repo / "examples" / "answer-packet.example.json"
+            example = json.loads(example_path.read_text(encoding="utf-8"))
+            example["version_safety"] = "current-ish"
+            example_path.write_text(json.dumps(example, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+            errors = cli.validate_root(repo)
+
+        self.assertTrue(any("answer-packet.example.json" in error for error in errors))
+        self.assertTrue(any("$.version_safety" in error for error in errors))
+
+    def test_schema_validator_catches_nested_errors(self) -> None:
+        schema = {
+            "type": "object",
+            "required": ["status", "items"],
+            "properties": {
+                "status": {"type": "string", "enum": ["ok"]},
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {"name": {"type": "string"}},
+                        "additionalProperties": False,
+                    },
+                },
+            },
+            "additionalProperties": False,
+        }
+
+        errors = cli.validate_instance_against_schema(
+            {"status": "bad", "items": [{"name": 7, "extra": True}], "unexpected": 1},
+            schema,
+        )
+
+        self.assertTrue(any("$.status" in error and "允许列表" in error for error in errors))
+        self.assertTrue(any("$.items[0].name" in error and "string" in error for error in errors))
+        self.assertTrue(any("额外字段 extra" in error for error in errors))
+        self.assertTrue(any("额外字段 unexpected" in error for error in errors))
 
     def test_gb_vehicle_safety_demo_counts(self) -> None:
         demo_root = ROOT / "demos" / "gb-vehicle-safety"
