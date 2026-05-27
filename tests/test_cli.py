@@ -30,6 +30,18 @@ class CliTests(unittest.TestCase):
     def test_validate_root(self) -> None:
         self.assertEqual(cli.validate_root(ROOT), [])
 
+    def test_gb_vehicle_safety_demo_counts(self) -> None:
+        demo_root = ROOT / "demos" / "gb-vehicle-safety"
+        sources = demo_root.joinpath("source-manifest.jsonl").read_text(encoding="utf-8").splitlines()
+        provisions = demo_root.joinpath("provisions.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
+        answers = demo_root.joinpath("answer-packets.synthetic.jsonl").read_text(encoding="utf-8").splitlines()
+        coverage = json.loads(demo_root.joinpath("coverage-report.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(len([line for line in sources if line.strip()]), 2)
+        self.assertEqual(len([line for line in provisions if line.strip()]), 12)
+        self.assertEqual(len([line for line in answers if line.strip()]), 5)
+        self.assertFalse(coverage["content_boundary"]["standard_pdf_text_stored"])
+
     def test_new_run_log_outputs_json(self) -> None:
         out = io.StringIO()
         with redirect_stdout(out):

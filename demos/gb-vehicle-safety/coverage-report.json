@@ -1,0 +1,47 @@
+{
+  "demo_id": "gb-vehicle-safety",
+  "title": "GB 7258 / GB 1589 vehicle safety workflow demo",
+  "source_count": 2,
+  "provision_count": 12,
+  "answer_packet_count": 5,
+  "source_ids": [
+    "src-gb-7258-2017",
+    "src-gb-1589-2016"
+  ],
+  "content_boundary": {
+    "official_metadata_records": 2,
+    "synthetic_provisions": 12,
+    "synthetic_answer_packets": 5,
+    "standard_pdf_text_stored": false,
+    "long_verbatim_standard_text_stored": false,
+    "public_repository_policy": "metadata and synthetic demo artifacts only"
+  },
+  "review_status_counts": {
+    "reviewed": 12
+  },
+  "version_status_counts": {
+    "current": 12
+  },
+  "topics": [
+    "source-intake",
+    "version-safety",
+    "vehicle-safety",
+    "dimensions",
+    "mass",
+    "axle-load",
+    "evidence",
+    "answer-contract"
+  ],
+  "validation": {
+    "commands": [
+      "standards-skills validate",
+      "python -m unittest discover -s tests"
+    ],
+    "expected_result": "pass"
+  },
+  "next_steps": [
+    "Add a real BYOD/private processing path before using actual standard PDFs.",
+    "Add change-packet schema for replacement and revision tracking.",
+    "Add compliance checklist schema before using this for evidence workflow."
+  ]
+}
