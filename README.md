@@ -96,3 +96,7 @@ standards. The default rule is metadata-only public storage and private
 bring-your-own-document processing for restricted standards.
 
 See [docs/source-access-policy.md](docs/source-access-policy.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
