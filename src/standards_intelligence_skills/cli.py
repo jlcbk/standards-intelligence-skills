@@ -69,6 +69,15 @@ REQUIRED_EXAMPLE_FIELDS = {
         "confidence",
         "unresolved_issues",
     },
+    "compliance-checklist.example.json": {
+        "checklist_id",
+        "title",
+        "scope",
+        "status",
+        "items",
+        "citations",
+        "unresolved_issues",
+    },
 }
 
 REQUIRED_DEMO_FIELDS = {

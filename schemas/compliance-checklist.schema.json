@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/compliance-checklist.schema.json",
+  "title": "ComplianceChecklist",
+  "type": "object",
+  "required": [
+    "checklist_id",
+    "title",
+    "scope",
+    "status",
+    "items",
+    "citations",
+    "unresolved_issues"
+  ],
+  "properties": {
+    "checklist_id": {"type": "string"},
+    "title": {"type": "string"},
+    "scope": {"type": "object", "additionalProperties": true},
+    "status": {
+      "type": "string",
+      "enum": ["draft_demo", "draft", "reviewed", "approved", "blocked"]
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "item_id",
+          "requirement_summary",
+          "source_provision_ids",
+          "control",
+          "evidence_required",
+          "owner_role",
+          "status"
+        ],
+        "properties": {
+          "item_id": {"type": "string"},
+          "requirement_summary": {"type": "string"},
+          "source_provision_ids": {"type": "array", "items": {"type": "string"}},
+          "control": {"type": "string"},
+          "evidence_required": {"type": "array", "items": {"type": "string"}},
+          "owner_role": {"type": "string"},
+          "status": {
+            "type": "string",
+            "enum": ["todo", "in_progress", "reviewed", "blocked", "not_applicable"]
+          },
+          "risk_level": {"type": "string", "enum": ["high", "medium", "low", "unknown"]},
+          "acceptance_criteria": {"type": "array", "items": {"type": "string"}},
+          "unresolved_issues": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provision_id", "source_id", "locator"],
+        "properties": {
+          "provision_id": {"type": "string"},
+          "source_id": {"type": "string"},
+          "locator": {"type": "string"},
+          "quote_policy": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "unresolved_issues": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
