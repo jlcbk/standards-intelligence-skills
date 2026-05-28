@@ -179,6 +179,29 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["due_count"], 0)
         self.assertEqual({item["state"] for item in payload["items"]}, {"ok"})
 
+    def test_inspect_corpus_outputs_private_safe_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            text_dir = Path(tmp) / "text"
+            text_dir.mkdir()
+            usable_lines = [
+                f"{index}.1 synthetic requirement line with enough text for inspection"
+                for index in range(1, 50)
+            ]
+            text_dir.joinpath("usable.txt").write_text("\n".join(usable_lines) + "\n", encoding="utf-8")
+            text_dir.joinpath("poor.txt").write_text("too short\n", encoding="utf-8")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = cli.main(["inspect-corpus", "--text-dir", str(text_dir), "--json"])
+
+        payload = json.loads(out.getvalue())
+        self.assertEqual(code, 0)
+        self.assertFalse(payload["content_boundary"]["raw_text_included"])
+        self.assertTrue(payload["content_boundary"]["public_repo_safe"])
+        self.assertEqual(payload["summary"]["document_count"], 2)
+        self.assertEqual(payload["summary"]["usable_count"], 1)
+        self.assertEqual(payload["summary"]["poor_count"], 1)
+
     def test_gb_vehicle_safety_demo_counts(self) -> None:
         demo_root = ROOT / "demos" / "gb-vehicle-safety"
         sources = demo_root.joinpath("source-manifest.jsonl").read_text(encoding="utf-8").splitlines()
