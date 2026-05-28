@@ -25,6 +25,31 @@ standards-skills inspect-corpus \
 4. 只把统计、schema、工具或脱敏后的 synthetic artifact 提交到公开仓库。
 5. 需要公开展示时，使用 metadata、locator、短引用策略和 paraphrased/synthetic demo。
 
+## 私有条款索引
+
+抽取质量可用后，可以生成不含正文的条款索引：
+
+```bash
+standards-skills index-corpus \
+  --text-dir private/gb-pdf-text \
+  --output private-runs/provision-index.jsonl \
+  --json
+```
+
+默认输出字段包括：
+
+- `provision_id`；
+- `source_file`；
+- `clause_number`；
+- `locator`；
+- `line_number`；
+- `source_quality`；
+- `text_included=false`。
+
+默认会跳过 `needs_review` 和 `poor` 的文件。确需在私有环境中进一步诊断时，可以加
+`--include-needs-review`。确需输出标题文本时，可以加 `--include-heading-text`，但这类
+输出应继续留在私有目录中。
+
 ## 报告边界
 
 `inspect-corpus` 只输出文件级统计：

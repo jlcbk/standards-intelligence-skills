@@ -25,14 +25,19 @@ SCHEMA_FILE_BY_EXAMPLE = {
     "document-family.example.json": "document-family.schema.json",
     "provision.example.json": "provision.schema.json",
     "private-corpus-report.example.json": "private-corpus-report.schema.json",
+    "private-provision-index.example.jsonl": "private-provision-index-record.schema.json",
     "skill-run-log.example.json": "skill-run-log.schema.json",
     "source-manifest.example.jsonl": "source-manifest.schema.json",
     "source-watchlist.example.json": "source-watchlist.schema.json",
     "task-packet.example.json": "task-packet.schema.json",
 }
 
-NUMBERED_HEADING_RE = re.compile(r"^\s*[0-9０-９]+(?:[.．][0-9０-９]+)*\s+")
+NUMBERED_HEADING_RE = re.compile(r"^\s*[0-9０-９]{1,2}(?:[.．][0-9０-９]{1,3})*\s+")
+HEADING_CAPTURE_RE = re.compile(
+    r"^\s*(?P<number>[0-9０-９]{1,2}(?:[.．][0-9０-９]{1,3})*)\s+(?P<heading>.+?)\s*$"
+)
 FONT_MAPPING_MARKERS = set("犌犅犜犐犆犛狏犲犺犻犮犾狋狔狆狉狅狀狊犪犳犫犱犵")
+FULLWIDTH_NUMBER_TRANS = str.maketrans("０１２３４５６７８９．", "0123456789.")
 
 SCHEMA_FILE_BY_DEMO = {
     "answer-packets.synthetic.jsonl": "answer-packet.schema.json",
@@ -657,6 +662,94 @@ def inspect_corpus(text_dir: Path) -> dict[str, Any]:
     }
 
 
+def normalize_clause_number(value: str) -> str:
+    return value.translate(FULLWIDTH_NUMBER_TRANS)
+
+
+def safe_identifier(value: str) -> str:
+    normalized = re.sub(r"[^0-9A-Za-z]+", "-", value).strip("-").lower()
+    return normalized or "item"
+
+
+def index_text_file(
+    path: Path,
+    *,
+    source_quality: str,
+    include_heading_text: bool,
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for line_number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+        if "…" in line or "..." in line:
+            continue
+        match = HEADING_CAPTURE_RE.match(line)
+        if not match:
+            continue
+        clause_number = normalize_clause_number(match.group("number"))
+        record = {
+            "provision_id": f"idx-{safe_identifier(path.stem)}-{safe_identifier(clause_number)}-l{line_number}",
+            "source_file": path.name,
+            "clause_number": clause_number,
+            "locator": f"{path.name}:L{line_number}",
+            "line_number": line_number,
+            "source_quality": source_quality,
+            "text_included": include_heading_text,
+        }
+        if include_heading_text:
+            record["heading_text"] = match.group("heading").strip()
+        records.append(record)
+    return records
+
+
+def index_corpus(
+    text_dir: Path,
+    *,
+    include_heading_text: bool = False,
+    include_needs_review: bool = False,
+) -> dict[str, Any]:
+    records: list[dict[str, Any]] = []
+    documents: list[dict[str, Any]] = []
+
+    for path in sorted(text_dir.glob("*.txt")):
+        if not path.is_file():
+            continue
+        inspection = inspect_text_file(path)
+        quality = str(inspection["extraction_quality"])
+        skipped = quality != "usable" and not include_needs_review
+        indexed_records = [] if skipped else index_text_file(
+            path,
+            source_quality=quality,
+            include_heading_text=include_heading_text,
+        )
+        records.extend(indexed_records)
+        documents.append(
+            {
+                "file_name": path.name,
+                "extraction_quality": quality,
+                "indexed_count": len(indexed_records),
+                "skipped": skipped,
+            }
+        )
+
+    return {
+        "report_id": f"provision-index-{uuid.uuid4().hex[:12]}",
+        "generated_at": utc_now(),
+        "text_dir": str(text_dir),
+        "summary": {
+            "document_count": len(documents),
+            "indexed_provision_count": len(records),
+            "skipped_document_count": sum(1 for item in documents if item["skipped"]),
+            "heading_text_included": include_heading_text,
+        },
+        "documents": documents,
+        "records": records,
+        "content_boundary": {
+            "raw_text_included": include_heading_text,
+            "public_repo_safe": not include_heading_text,
+            "notes": "默认只输出条款编号、locator 和行号；仅在显式开启时包含 heading text。",
+        },
+    }
+
+
 def validate_root(root: Path) -> list[str]:
     errors: list[str] = []
 
@@ -845,6 +938,42 @@ def cmd_inspect_corpus(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_index_corpus(args: argparse.Namespace) -> int:
+    text_dir = Path(args.text_dir)
+    if not text_dir.exists() or not text_dir.is_dir():
+        print(f"{text_dir}: 不是有效目录", file=sys.stderr)
+        return 2
+
+    report = index_corpus(
+        text_dir,
+        include_heading_text=args.include_heading_text,
+        include_needs_review=args.include_needs_review,
+    )
+    if args.output:
+        output = Path(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        with output.open("w", encoding="utf-8") as handle:
+            for record in report["records"]:
+                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    summary_report = {key: value for key, value in report.items() if key != "records"}
+    if args.output:
+        summary_report["records_output"] = str(args.output)
+    summary_text = json.dumps(summary_report, indent=2, ensure_ascii=False) + "\n"
+    if args.json:
+        print(summary_text, end="")
+    else:
+        summary = report["summary"]
+        print(
+            "private provision index："
+            f"{summary['indexed_provision_count']} records, "
+            f"{summary['skipped_document_count']} skipped documents"
+        )
+        if args.output:
+            print(f"records: {args.output}")
+    return 0
+
+
 def cmd_new_run_log(args: argparse.Namespace) -> int:
     payload = build_run_log(skill_name=args.skill, task=args.task, actor=args.actor, run_id=args.run_id)
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
@@ -948,6 +1077,18 @@ def build_parser() -> argparse.ArgumentParser:
     inspect_parser.add_argument("--output", help="可选报告输出路径。")
     inspect_parser.add_argument("--json", action="store_true", help="输出 JSON 报告。")
     inspect_parser.set_defaults(func=cmd_inspect_corpus)
+
+    index_parser = subparsers.add_parser("index-corpus", help="为私有文本语料生成条款编号索引。")
+    index_parser.add_argument("--text-dir", required=True, help="由 PDF/OCR 生成的私有 .txt 目录。")
+    index_parser.add_argument("--output", help="可选 JSONL 输出路径。")
+    index_parser.add_argument("--include-heading-text", action="store_true", help="在私有输出中包含 heading text。")
+    index_parser.add_argument(
+        "--include-needs-review",
+        action="store_true",
+        help="同时索引抽取质量为 needs_review 的文件。",
+    )
+    index_parser.add_argument("--json", action="store_true", help="输出 JSON summary。")
+    index_parser.set_defaults(func=cmd_index_corpus)
 
     run_log_parser = subparsers.add_parser("new-run-log", help="创建 run log 模板。")
     run_log_parser.add_argument("--skill", required=True, help="Skill 名称。")

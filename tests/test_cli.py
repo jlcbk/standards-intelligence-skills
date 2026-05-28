@@ -202,6 +202,39 @@ class CliTests(unittest.TestCase):
         self.assertEqual(payload["summary"]["usable_count"], 1)
         self.assertEqual(payload["summary"]["poor_count"], 1)
 
+    def test_index_corpus_outputs_locator_only_records_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            text_dir = Path(tmp) / "text"
+            text_dir.mkdir()
+            lines = [
+                f"{index}.1 synthetic requirement line with enough text for indexing"
+                for index in range(1, 20)
+            ]
+            text_dir.joinpath("standard.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+            output = Path(tmp) / "index.jsonl"
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = cli.main(
+                    [
+                        "index-corpus",
+                        "--text-dir",
+                        str(text_dir),
+                        "--output",
+                        str(output),
+                        "--json",
+                    ]
+                )
+            records = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
+
+        payload = json.loads(out.getvalue())
+        self.assertEqual(code, 0)
+        self.assertEqual(payload["summary"]["indexed_provision_count"], 19)
+        self.assertFalse(payload["content_boundary"]["raw_text_included"])
+        self.assertTrue(records)
+        self.assertIn("locator", records[0])
+        self.assertNotIn("heading_text", records[0])
+
     def test_gb_vehicle_safety_demo_counts(self) -> None:
         demo_root = ROOT / "demos" / "gb-vehicle-safety"
         sources = demo_root.joinpath("source-manifest.jsonl").read_text(encoding="utf-8").splitlines()

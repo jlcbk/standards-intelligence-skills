@@ -57,6 +57,7 @@ standards-skills list
 standards-skills validate
 standards-skills check-sources --as-of 2026-05-27
 standards-skills inspect-corpus --text-dir private/gb-pdf-text --json
+standards-skills index-corpus --text-dir private/gb-pdf-text --output private-runs/provision-index.jsonl
 standards-skills run-task --packet examples/task-packet.example.json --validate
 python -m unittest discover -s tests
 ```
@@ -82,6 +83,9 @@ metadata source 是否到期需要复核。默认只报告；如果要在 CI 中
 
 `standards-skills inspect-corpus` 用于私有 BYOD 文本抽取质量检查。它只输出统计和质量标记，
 不输出标准正文。
+
+`standards-skills index-corpus` 用于私有 BYOD 条款索引。默认只输出条款编号、源文件、
+行号和 locator，不输出条款正文或 heading text。
 
 ## PI Agent 使用方式
 
