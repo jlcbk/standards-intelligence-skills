@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/private-provision-index-record.schema.json",
+  "title": "PrivateProvisionIndexRecord",
+  "type": "object",
+  "required": [
+    "provision_id",
+    "source_file",
+    "clause_number",
+    "locator",
+    "line_number",
+    "source_quality",
+    "text_included"
+  ],
+  "properties": {
+    "provision_id": {"type": "string"},
+    "source_file": {"type": "string"},
+    "clause_number": {"type": "string"},
+    "locator": {"type": "string"},
+    "line_number": {"type": "integer"},
+    "source_quality": {"type": "string", "enum": ["usable", "needs_review", "poor"]},
+    "text_included": {"type": "boolean"},
+    "heading_text": {"type": "string"}
+  },
+  "additionalProperties": true
+}
