@@ -1,0 +1,45 @@
+{
+  "report_id": "corpus-inspection-demo-001",
+  "generated_at": "2026-05-28T00:00:00Z",
+  "text_dir": "private/gb-pdf-text",
+  "summary": {
+    "document_count": 2,
+    "usable_count": 1,
+    "needs_review_count": 1,
+    "poor_count": 0,
+    "total_chars": 12000
+  },
+  "documents": [
+    {
+      "file_name": "demo-standard-a.txt",
+      "line_count": 300,
+      "non_empty_line_count": 180,
+      "char_count": 10000,
+      "numbered_heading_count": 42,
+      "private_use_char_count": 0,
+      "font_mapping_marker_count": 0,
+      "extraction_quality": "usable",
+      "notes": [
+        "适合进入私有条款抽取测试。"
+      ]
+    },
+    {
+      "file_name": "demo-standard-b.txt",
+      "line_count": 80,
+      "non_empty_line_count": 40,
+      "char_count": 2000,
+      "numbered_heading_count": 2,
+      "private_use_char_count": 120,
+      "font_mapping_marker_count": 80,
+      "extraction_quality": "needs_review",
+      "notes": [
+        "条款编号较少或疑似字体映射问题，应先 OCR/人工复核。"
+      ]
+    }
+  ],
+  "content_boundary": {
+    "raw_text_included": false,
+    "public_repo_safe": true,
+    "notes": "报告只包含统计和质量标记，不包含标准正文。"
+  }
+}

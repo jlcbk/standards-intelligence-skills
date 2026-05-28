@@ -26,3 +26,6 @@
 3. 公开 examples 必须是 synthetic、public-domain 或明确可再分发内容。
 4. 每条 source manifest 都必须包含 access 和 redistribution 字段。
 5. 如果授权状态不确定，先按 `metadata_only` 或 `private_processing_only` 处理。
+6. 私有 PDF、OCR/text extraction output 和真实 review notes 应放在 `private/`、
+   `private-sources/` 或 `private-runs/`，不进入公开仓库。
+7. 不包含正文的 corpus inspection report 可以公开保存，用于说明抽取质量和测试边界。

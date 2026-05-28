@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/private-corpus-report.schema.json",
+  "title": "PrivateCorpusInspectionReport",
+  "type": "object",
+  "required": [
+    "report_id",
+    "generated_at",
+    "text_dir",
+    "summary",
+    "documents",
+    "content_boundary"
+  ],
+  "properties": {
+    "report_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "text_dir": {"type": "string"},
+    "summary": {
+      "type": "object",
+      "required": [
+        "document_count",
+        "usable_count",
+        "needs_review_count",
+        "poor_count",
+        "total_chars"
+      ],
+      "properties": {
+        "document_count": {"type": "integer"},
+        "usable_count": {"type": "integer"},
+        "needs_review_count": {"type": "integer"},
+        "poor_count": {"type": "integer"},
+        "total_chars": {"type": "integer"}
+      },
+      "additionalProperties": true
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "file_name",
+          "line_count",
+          "non_empty_line_count",
+          "char_count",
+          "numbered_heading_count",
+          "private_use_char_count",
+          "font_mapping_marker_count",
+          "extraction_quality"
+        ],
+        "properties": {
+          "file_name": {"type": "string"},
+          "line_count": {"type": "integer"},
+          "non_empty_line_count": {"type": "integer"},
+          "char_count": {"type": "integer"},
+          "numbered_heading_count": {"type": "integer"},
+          "private_use_char_count": {"type": "integer"},
+          "font_mapping_marker_count": {"type": "integer"},
+          "extraction_quality": {
+            "type": "string",
+            "enum": ["usable", "needs_review", "poor"]
+          },
+          "notes": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    },
+    "content_boundary": {
+      "type": "object",
+      "required": ["raw_text_included", "public_repo_safe"],
+      "properties": {
+        "raw_text_included": {"type": "boolean"},
+        "public_repo_safe": {"type": "boolean"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import uuid
 from dataclasses import dataclass
@@ -23,11 +24,15 @@ SCHEMA_FILE_BY_EXAMPLE = {
     "compliance-checklist.example.json": "compliance-checklist.schema.json",
     "document-family.example.json": "document-family.schema.json",
     "provision.example.json": "provision.schema.json",
+    "private-corpus-report.example.json": "private-corpus-report.schema.json",
     "skill-run-log.example.json": "skill-run-log.schema.json",
     "source-manifest.example.jsonl": "source-manifest.schema.json",
     "source-watchlist.example.json": "source-watchlist.schema.json",
     "task-packet.example.json": "task-packet.schema.json",
 }
+
+NUMBERED_HEADING_RE = re.compile(r"^\s*[0-9０-９]+(?:[.．][0-9０-９]+)*\s+")
+FONT_MAPPING_MARKERS = set("犌犅犜犐犆犛狏犲犺犻犮犾狋狔狆狉狅狀狊犪犳犫犱犵")
 
 SCHEMA_FILE_BY_DEMO = {
     "answer-packets.synthetic.jsonl": "answer-packet.schema.json",
@@ -584,6 +589,74 @@ def check_source_watchlists(root: Path, as_of: datetime) -> dict[str, Any]:
     }
 
 
+def private_use_char_count(text: str) -> int:
+    return sum(1 for char in text if char == "\ufffd" or 0xE000 <= ord(char) <= 0xF8FF)
+
+
+def inspect_text_file(path: Path) -> dict[str, Any]:
+    text = path.read_text(encoding="utf-8", errors="replace")
+    lines = text.splitlines()
+    non_empty_lines = [line for line in lines if line.strip()]
+    char_count = len(text)
+    numbered_heading_count = sum(1 for line in non_empty_lines if NUMBERED_HEADING_RE.match(line))
+    private_chars = private_use_char_count(text)
+    font_mapping_marker_count = sum(1 for char in text if char in FONT_MAPPING_MARKERS)
+
+    notes: list[str] = []
+    if char_count < 1000:
+        quality = "poor"
+        notes.append("可抽取字符数过少，可能是扫描件或抽取失败。")
+    elif font_mapping_marker_count / max(char_count, 1) > 0.005:
+        quality = "needs_review"
+        notes.append("疑似存在 PDF 字体映射乱码，建议先 OCR 或人工复核。")
+    elif numbered_heading_count < 10:
+        quality = "needs_review"
+        notes.append("识别到的条款编号较少，建议先检查 OCR 或字体映射。")
+    elif private_chars / max(char_count, 1) > 0.01:
+        quality = "needs_review"
+        notes.append("疑似存在字体映射或乱码字符，建议人工复核抽取质量。")
+    else:
+        quality = "usable"
+        notes.append("文本统计形态适合进入私有条款抽取测试。")
+
+    return {
+        "file_name": path.name,
+        "line_count": len(lines),
+        "non_empty_line_count": len(non_empty_lines),
+        "char_count": char_count,
+        "numbered_heading_count": numbered_heading_count,
+        "private_use_char_count": private_chars,
+        "font_mapping_marker_count": font_mapping_marker_count,
+        "extraction_quality": quality,
+        "notes": notes,
+    }
+
+
+def inspect_corpus(text_dir: Path) -> dict[str, Any]:
+    documents = [inspect_text_file(path) for path in sorted(text_dir.glob("*.txt")) if path.is_file()]
+    quality_counts = {
+        "usable_count": sum(1 for item in documents if item["extraction_quality"] == "usable"),
+        "needs_review_count": sum(1 for item in documents if item["extraction_quality"] == "needs_review"),
+        "poor_count": sum(1 for item in documents if item["extraction_quality"] == "poor"),
+    }
+    return {
+        "report_id": f"corpus-inspection-{uuid.uuid4().hex[:12]}",
+        "generated_at": utc_now(),
+        "text_dir": str(text_dir),
+        "summary": {
+            "document_count": len(documents),
+            **quality_counts,
+            "total_chars": sum(int(item["char_count"]) for item in documents),
+        },
+        "documents": documents,
+        "content_boundary": {
+            "raw_text_included": False,
+            "public_repo_safe": True,
+            "notes": "报告只包含统计和质量标记，不包含标准正文。",
+        },
+    }
+
+
 def validate_root(root: Path) -> list[str]:
     errors: list[str] = []
 
@@ -743,6 +816,35 @@ def cmd_check_sources(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_inspect_corpus(args: argparse.Namespace) -> int:
+    text_dir = Path(args.text_dir)
+    if not text_dir.exists() or not text_dir.is_dir():
+        print(f"{text_dir}: 不是有效目录", file=sys.stderr)
+        return 2
+
+    report = inspect_corpus(text_dir)
+    text = json.dumps(report, indent=2, ensure_ascii=False) + "\n"
+    if args.output:
+        output = Path(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(text, encoding="utf-8")
+
+    if args.json:
+        print(text, end="")
+    else:
+        summary = report["summary"]
+        print(
+            "private corpus inspection："
+            f"{summary['document_count']} files, "
+            f"{summary['usable_count']} usable, "
+            f"{summary['needs_review_count']} needs_review, "
+            f"{summary['poor_count']} poor"
+        )
+        if args.output:
+            print(f"report: {args.output}")
+    return 0
+
+
 def cmd_new_run_log(args: argparse.Namespace) -> int:
     payload = build_run_log(skill_name=args.skill, task=args.task, actor=args.actor, run_id=args.run_id)
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
@@ -840,6 +942,12 @@ def build_parser() -> argparse.ArgumentParser:
     check_sources_parser.add_argument("--fail-on-due", action="store_true", help="存在到期 watchlist 时返回失败。")
     check_sources_parser.add_argument("--json", action="store_true", help="输出 JSON。")
     check_sources_parser.set_defaults(func=cmd_check_sources)
+
+    inspect_parser = subparsers.add_parser("inspect-corpus", help="检查私有文本语料的抽取质量。")
+    inspect_parser.add_argument("--text-dir", required=True, help="由 PDF/OCR 生成的私有 .txt 目录。")
+    inspect_parser.add_argument("--output", help="可选报告输出路径。")
+    inspect_parser.add_argument("--json", action="store_true", help="输出 JSON 报告。")
+    inspect_parser.set_defaults(func=cmd_inspect_corpus)
 
     run_log_parser = subparsers.add_parser("new-run-log", help="创建 run log 模板。")
     run_log_parser.add_argument("--skill", required=True, help="Skill 名称。")
