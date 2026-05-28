@@ -678,6 +678,8 @@ def index_text_file(
     include_heading_text: bool,
 ) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
+    seen_top_level_numbers: set[str] = set()
+    seen_clause_numbers: set[str] = set()
     for line_number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
         if "…" in line or "..." in line:
             continue
@@ -685,6 +687,15 @@ def index_text_file(
         if not match:
             continue
         clause_number = normalize_clause_number(match.group("number"))
+        if clause_number == "0" or clause_number.startswith("0"):
+            continue
+        if "." not in clause_number:
+            if clause_number in seen_top_level_numbers:
+                continue
+            seen_top_level_numbers.add(clause_number)
+        if clause_number in seen_clause_numbers:
+            continue
+        seen_clause_numbers.add(clause_number)
         record = {
             "provision_id": f"idx-{safe_identifier(path.stem)}-{safe_identifier(clause_number)}-l{line_number}",
             "source_file": path.name,
